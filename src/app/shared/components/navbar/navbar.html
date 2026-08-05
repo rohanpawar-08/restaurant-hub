@@ -1,19 +1,19 @@
 <nav class="navbar">
 
   <div class="logo">
-    🍽️ RestaurantHub
+    🍽 <span>RestaurantHub</span>
   </div>
 
   <ul class="nav-links">
-    <li><a href="#">Home</a></li>
-    <li><a href="#">Menu</a></li>
-    <li><a href="#">About</a></li>
-    <li><a href="#">Reservation</a></li>
-    <li><a href="#">Contact</a></li>
+    <li><a routerLink="/">Home</a></li>
+    <li><a routerLink="/menu">Menu</a></li>
+    <li><a routerLink="/about">About</a></li>
+    <li><a routerLink="/contact">Contact</a></li>
   </ul>
 
-  <button class="login-btn">
-    Login
-  </button>
+  <div class="auth-buttons">
+    <button class="login-btn">Login</button>
+    <button class="register-btn">Register</button>
+  </div>
 
 </nav>

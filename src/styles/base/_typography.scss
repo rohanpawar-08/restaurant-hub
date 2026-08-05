@@ -1,0 +1,31 @@
+@use "../abstracts/variables" as *;
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: $text-dark;
+  background: $background-light;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: $text-dark;
+  font-weight: 700;
+}
+
+p {
+  color: $text-light;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
