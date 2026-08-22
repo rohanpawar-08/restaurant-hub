@@ -1,0 +1,63 @@
+<article class="food-card" [attr.aria-label]="food().name">
+  <div class="card-media">
+    @if (!imageError() && food().image) {
+      <img
+        [src]="food().image"
+        [alt]="food().name + ' - ' + food().description"
+        (error)="onImageError()"
+        class="food-img"
+        loading="lazy"
+      />
+    } @else {
+      <div class="image-placeholder" aria-hidden="true">
+        <span class="placeholder-icon">{{ food().icon || '🍽' }}</span>
+      </div>
+    }
+
+    <!-- Badges Row -->
+    <div class="media-badges">
+      <div
+        class="diet-badge"
+        [class.veg]="food().isVeg"
+        [class.non-veg]="!food().isVeg"
+        [attr.title]="food().isVeg ? 'Vegetarian' : 'Non-Vegetarian'"
+        [attr.aria-label]="food().isVeg ? 'Vegetarian' : 'Non-Vegetarian'"
+      >
+        <span class="diet-symbol"></span>
+      </div>
+
+      <div class="rating-badge" aria-label="Rating">
+        <span class="star" aria-hidden="true">★</span>
+        <span class="rating-value">{{ food().rating }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="category-meta">
+      <span class="category-tag">{{ food().category }}</span>
+      @if (food().preparationTime) {
+        <span class="prep-time">⏱ {{ food().preparationTime }}</span>
+      }
+    </div>
+
+    <h3 class="food-title">{{ food().name }}</h3>
+    <p class="food-description">{{ food().description }}</p>
+
+    <div class="card-footer">
+      <div class="price-container">
+        <span class="price-label">Price</span>
+        <span class="price-amount">{{ food().price | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="add-to-cart-btn"
+        [attr.aria-label]="'Add ' + food().name + ' to cart'"
+      >
+        <span class="btn-icon" aria-hidden="true">+</span>
+        <span>Add to Cart</span>
+      </button>
+    </div>
+  </div>
+</article>

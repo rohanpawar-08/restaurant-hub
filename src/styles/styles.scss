@@ -1,6 +1,27 @@
+/* Angular Material Theming */
+@use '@angular/material' as mat;
+
 /* Abstracts */
 @use "abstracts/variables" as *;
 
 /* Base */
 @use "base/reset";
 @use "base/typography";
+
+/* Theme */
+@use "themes/theme";
+
+/* Material 3 Theme Configuration */
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}

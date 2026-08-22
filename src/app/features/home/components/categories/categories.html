@@ -1,0 +1,19 @@
+<section class="categories-section" aria-labelledby="categories-heading">
+  <div class="categories-container">
+    <div class="section-header">
+      <span class="section-badge">Menu Variety</span>
+      <h2 id="categories-heading" class="section-title">Explore Our Categories</h2>
+      <p class="section-subtitle">
+        Browse hand-crafted recipes across diverse culinary traditions and find your next favorite dish.
+      </p>
+    </div>
+
+    <div class="categories-grid">
+      @for (category of categories(); track category.id) {
+        <div class="category-item">
+          <app-category-card [category]="category"></app-category-card>
+        </div>
+      }
+    </div>
+  </div>
+</section>

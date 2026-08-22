@@ -1,0 +1,83 @@
+@use "../../../../styles/abstracts/variables" as *;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.feature-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.85rem 1.6rem;
+  background-color: $white;
+  border-radius: $radius-lg;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: $shadow-sm;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  outline: none;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: $shadow-md;
+    border-color: rgba($primary-color, 0.25);
+
+    .icon-wrapper {
+      background-color: $primary-color;
+      transform: scale(1.08) rotate(3deg);
+
+      .feature-icon {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+      }
+    }
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba($primary-color, 0.45);
+    outline-offset: 2px;
+  }
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: $radius-md;
+  background-color: rgba($primary-color, 0.1);
+  margin-bottom: 1.25rem;
+  transition: background-color 0.25s ease, transform 0.25s ease;
+}
+
+.feature-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  transition: filter 0.25s ease;
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin: 0 0 0.6rem 0;
+  letter-spacing: -0.3px;
+}
+
+.feature-description {
+  font-size: 0.95rem;
+  color: $text-light;
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card,
+  .icon-wrapper {
+    transition: none !important;
+    transform: none !important;
+  }
+}

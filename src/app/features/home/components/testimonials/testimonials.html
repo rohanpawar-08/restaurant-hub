@@ -1,0 +1,19 @@
+<section class="testimonials-section" aria-labelledby="testimonials-heading">
+  <div class="testimonials-container">
+    <div class="section-header">
+      <span class="section-badge">Customer Reviews</span>
+      <h2 id="testimonials-heading" class="section-title">What Our Customers Say</h2>
+      <p class="section-subtitle">
+        Read genuine experiences from food lovers, critics, and regular guests who enjoy our dishes every day.
+      </p>
+    </div>
+
+    <div class="testimonials-grid">
+      @for (testimonial of testimonials(); track testimonial.id) {
+        <div class="testimonial-item">
+          <app-testimonial-card [testimonial]="testimonial"></app-testimonial-card>
+        </div>
+      }
+    </div>
+  </div>
+</section>

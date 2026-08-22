@@ -1,0 +1,21 @@
+<article
+  class="category-card"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="'Explore ' + category().name + ' category'"
+>
+  <div class="icon-wrapper" aria-hidden="true">
+    <span class="category-icon">{{ category().icon }}</span>
+  </div>
+
+  <div class="category-info">
+    <h3 class="category-name">{{ category().name }}</h3>
+    @if (category().itemCount) {
+      <span class="category-count">{{ category().itemCount }} dishes</span>
+    }
+  </div>
+
+  <div class="arrow-indicator" aria-hidden="true">
+    <span class="arrow-symbol">→</span>
+  </div>
+</article>

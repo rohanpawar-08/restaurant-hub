@@ -1,0 +1,19 @@
+<section class="why-choose-section" aria-labelledby="why-choose-heading">
+  <div class="why-choose-container">
+    <div class="section-header">
+      <span class="section-badge">Our Commitment</span>
+      <h2 id="why-choose-heading" class="section-title">Why Choose RestaurantHub?</h2>
+      <p class="section-subtitle">
+        We blend culinary craftsmanship with seamless digital dining to deliver an unforgettable dining experience every time.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      @for (feature of features(); track feature.id) {
+        <div class="feature-item">
+          <app-feature-card [feature]="feature"></app-feature-card>
+        </div>
+      }
+    </div>
+  </div>
+</section>

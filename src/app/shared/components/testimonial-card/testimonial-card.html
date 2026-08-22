@@ -1,0 +1,36 @@
+<article class="testimonial-card" tabindex="0">
+  <div class="card-top">
+    <div class="rating-stars" [attr.aria-label]="testimonial().rating + ' out of 5 stars'">
+      @for (star of stars(); track star) {
+        <span class="star-icon" aria-hidden="true">★</span>
+      }
+    </div>
+    <div class="quote-mark" aria-hidden="true">“</div>
+  </div>
+
+  <blockquote class="testimonial-body">
+    <p class="testimonial-comment">{{ testimonial().comment }}</p>
+  </blockquote>
+
+  <footer class="testimonial-author">
+    <div class="avatar-container">
+      @if (testimonial().avatar && !imageError()) {
+        <img
+          [src]="testimonial().avatar"
+          [alt]="testimonial().name"
+          class="author-avatar"
+          (error)="onImageError()"
+        />
+      } @else {
+        <div class="avatar-fallback" [attr.aria-label]="testimonial().name">
+          {{ initials() }}
+        </div>
+      }
+    </div>
+
+    <div class="author-info">
+      <cite class="author-name">{{ testimonial().name }}</cite>
+      <span class="author-role">{{ testimonial().role }}</span>
+    </div>
+  </footer>
+</article>

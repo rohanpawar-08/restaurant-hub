@@ -1,0 +1,83 @@
+@use "../../../../../styles/abstracts/variables" as *;
+
+.categories-section {
+  padding: $space-xl 8%;
+  background-color: $white;
+  overflow: hidden;
+
+  @media (max-width: 992px) {
+    padding: $space-lg 6%;
+  }
+
+  @media (max-width: 576px) {
+    padding: $space-md 1.25rem;
+  }
+}
+
+.categories-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: $space-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    margin-bottom: $space-md;
+  }
+}
+
+.section-badge {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: $primary-color;
+  background-color: rgba($primary-color, 0.1);
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  margin-bottom: 0.6rem;
+}
+
+.section-title {
+  font-size: clamp(1.85rem, 3.2vw, 2.6rem);
+  font-weight: 800;
+  color: $text-dark;
+  margin: 0 0 0.6rem 0;
+  letter-spacing: -0.5px;
+}
+
+.section-subtitle {
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+  color: $text-light;
+  max-width: 580px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+}

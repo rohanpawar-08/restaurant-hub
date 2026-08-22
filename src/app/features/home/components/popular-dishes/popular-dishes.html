@@ -1,0 +1,19 @@
+<section class="popular-section" aria-labelledby="popular-heading">
+  <div class="popular-container">
+    <div class="section-header">
+      <span class="section-badge">Chef's Recommendations</span>
+      <h2 id="popular-heading" class="section-title">Popular Dishes</h2>
+      <p class="section-subtitle">
+        Our most celebrated culinary creations, prepared fresh daily by master chefs using premium ingredients.
+      </p>
+    </div>
+
+    <div class="dishes-grid">
+      @for (dish of popularDishes(); track dish.id) {
+        <div class="dish-item">
+          <app-food-card [food]="dish"></app-food-card>
+        </div>
+      }
+    </div>
+  </div>
+</section>
