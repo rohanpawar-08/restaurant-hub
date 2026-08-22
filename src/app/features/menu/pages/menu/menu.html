@@ -1,0 +1,167 @@
+<div class="menu-page">
+  <!-- Menu Header -->
+  <header class="menu-header">
+    <div class="header-container">
+      <span class="menu-badge">Gourmet Selection</span>
+      <h1 class="menu-title">Our Menu</h1>
+      <p class="menu-subtitle">
+        Explore hand-crafted recipes prepared with fresh, premium ingredients and authentic culinary traditions.
+      </p>
+    </div>
+  </header>
+
+  <main class="menu-content">
+    <div class="menu-container">
+      <!-- Search & Filters Toolbar -->
+      <section class="filter-toolbar" aria-label="Menu Filters and Search">
+        <div class="toolbar-top">
+          <!-- Search Bar -->
+          <div class="search-box">
+            <label for="menu-search" class="visually-hidden">Search dishes by name, description, or category</label>
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input
+              id="menu-search"
+              type="text"
+              class="search-input"
+              placeholder="Search dishes (e.g. Pizza, Burger, Alfredo)..."
+              [value]="searchTerm()"
+              (input)="onSearchInput($event)"
+              autocomplete="off"
+            />
+            @if (searchTerm().trim().length > 0) {
+              <button
+                type="button"
+                class="search-clear-btn"
+                aria-label="Clear search"
+                (click)="clearSearch()"
+              >
+                ✕
+              </button>
+            }
+          </div>
+
+          <!-- Diet & Sort Controls Row -->
+          <div class="controls-row">
+            <!-- Dietary Filter Group -->
+            <div class="diet-group" role="group" aria-label="Dietary preferences">
+              <button
+                type="button"
+                class="diet-btn"
+                [class.active]="foodType() === 'all'"
+                [attr.aria-pressed]="foodType() === 'all'"
+                (click)="selectFoodType('all')"
+              >
+                All
+              </button>
+              <button
+                type="button"
+                class="diet-btn veg-btn"
+                [class.active]="foodType() === 'veg'"
+                [attr.aria-pressed]="foodType() === 'veg'"
+                (click)="selectFoodType('veg')"
+              >
+                <span class="diet-dot veg" aria-hidden="true"></span>
+                <span>Veg</span>
+              </button>
+              <button
+                type="button"
+                class="diet-btn non-veg-btn"
+                [class.active]="foodType() === 'non-veg'"
+                [attr.aria-pressed]="foodType() === 'non-veg'"
+                (click)="selectFoodType('non-veg')"
+              >
+                <span class="diet-dot non-veg" aria-hidden="true"></span>
+                <span>Non-Veg</span>
+              </button>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="sort-group">
+              <label for="menu-sort" class="sort-label">Sort by:</label>
+              <div class="select-wrapper">
+                <select
+                  id="menu-sort"
+                  class="sort-select"
+                  [value]="sortOption()"
+                  (change)="onSortChange($event)"
+                  aria-label="Sort dishes"
+                >
+                  <option value="recommended">Recommended</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="rating-desc">Rating: High to Low</option>
+                </select>
+                <span class="select-arrow" aria-hidden="true">▼</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Pills Scrollable Row -->
+        <nav class="category-pills" aria-label="Filter by Food Category">
+          <button
+            type="button"
+            class="pill-btn"
+            [class.active]="selectedCategory() === 'all'"
+            [attr.aria-pressed]="selectedCategory() === 'all'"
+            (click)="selectCategory('all')"
+          >
+            <span class="pill-icon" aria-hidden="true">🍽️</span>
+            <span>All Categories</span>
+          </button>
+
+          @for (category of categories(); track category.id) {
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="selectedCategory() === category.slug"
+              [attr.aria-pressed]="selectedCategory() === category.slug"
+              (click)="selectCategory(category.slug)"
+            >
+              <span class="pill-icon" aria-hidden="true">{{ category.icon }}</span>
+              <span>{{ category.name }}</span>
+            </button>
+          }
+        </nav>
+      </section>
+
+      <!-- Results Meta Info -->
+      <div class="results-meta" aria-live="polite">
+        <p class="results-count">
+          Showing <strong>{{ totalCount() }}</strong> {{ totalCount() === 1 ? 'dish' : 'dishes' }}
+        </p>
+
+        @if (hasActiveFilters()) {
+          <button type="button" class="reset-link-btn" (click)="resetAllFilters()">
+            Clear all filters
+          </button>
+        }
+      </div>
+
+      <!-- Food Grid or Empty State -->
+      @if (filteredFoods().length > 0) {
+        <div class="foods-grid">
+          @for (food of filteredFoods(); track food.id) {
+            <div class="food-item">
+              <app-food-card [food]="food"></app-food-card>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Empty State -->
+        <div class="empty-state" role="status">
+          <div class="empty-icon-wrapper" aria-hidden="true">
+            <span class="empty-icon">🍽️</span>
+          </div>
+          <h2 class="empty-title">No dishes found</h2>
+          <p class="empty-description">
+            We couldn't find any dishes matching your current search or filter criteria. Try adjusting your keywords or clearing your active filters.
+          </p>
+          <button type="button" class="empty-action-btn" (click)="resetAllFilters()">
+            Reset All Filters
+          </button>
+        </div>
+      }
+    </div>
+  </main>
+</div>

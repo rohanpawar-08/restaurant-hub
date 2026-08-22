@@ -12,6 +12,11 @@ export const routes: Routes = [
         path: '',
         component: Home,
       },
+      {
+        path: 'menu',
+        loadComponent: () =>
+          import('./features/menu/pages/menu/menu').then((m) => m.Menu),
+      },
     ],
   },
-];
+];
