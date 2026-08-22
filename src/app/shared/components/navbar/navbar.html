@@ -7,6 +7,7 @@
   <ul class="nav-links">
     <li><a routerLink="/">Home</a></li>
     <li><a routerLink="/menu">Menu</a></li>
+    <li><a routerLink="/orders">Orders</a></li>
     <li><a routerLink="/about">About</a></li>
     <li><a routerLink="/contact">Contact</a></li>
     <li>
@@ -22,9 +23,23 @@
     </li>
   </ul>
 
-  <div class="auth-buttons">
-    <button type="button" class="login-btn">Login</button>
-    <button type="button" class="register-btn">Register</button>
-  </div>
+  @if (isAuthenticated()) {
+    <div class="user-nav-section">
+      <span class="user-greeting" [attr.aria-label]="'Logged in as ' + currentUser()?.fullName">
+        Hi, <strong>{{ userDisplayName() }}</strong>
+      </span>
+      <a routerLink="/profile" class="profile-btn" aria-label="Customer Profile">
+        Profile
+      </a>
+      <button type="button" class="logout-btn" (click)="logout()" aria-label="Logout">
+        Logout
+      </button>
+    </div>
+  } @else {
+    <div class="auth-buttons">
+      <a routerLink="/login" class="login-btn">Login</a>
+      <a routerLink="/register" class="register-btn">Register</a>
+    </div>
+  }
 
 </nav>

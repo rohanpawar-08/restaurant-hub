@@ -1,0 +1,110 @@
+<div class="profile-page">
+  <div class="profile-container">
+
+    @if (currentUser(); as user) {
+      <!-- Profile Header Card -->
+      <section class="profile-hero-card" aria-label="Customer Profile Summary">
+        <div class="avatar-container">
+          <div class="avatar-initials" aria-hidden="true">
+            {{ userInitials() }}
+          </div>
+          <div class="status-indicator" title="Active Session"></div>
+        </div>
+
+        <div class="hero-details">
+          <div class="name-badge-row">
+            <h1 class="user-fullname">{{ user.fullName }}</h1>
+            <span class="member-tag">Verified Customer</span>
+          </div>
+          <p class="user-email">{{ user.email }}</p>
+          <p class="user-id">Customer ID: <code>{{ user.id }}</code></p>
+        </div>
+      </section>
+
+      <!-- Profile Content Grid -->
+      <div class="profile-grid">
+
+        <!-- Personal Details Card -->
+        <section class="profile-card" aria-labelledby="details-heading">
+          <div class="card-header">
+            <span class="card-icon" aria-hidden="true">👤</span>
+            <h2 id="details-heading">Account Information</h2>
+          </div>
+
+          <div class="info-list">
+            <div class="info-item">
+              <span class="info-label">Full Name</span>
+              <span class="info-value">{{ user.fullName }}</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Email Address</span>
+              <span class="info-value">{{ user.email }}</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Mobile Number</span>
+              <span class="info-value">+91 {{ user.phone }}</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Member Since</span>
+              <span class="info-value">{{ user.createdAt | date: 'mediumDate' }}</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Account Type</span>
+              <span class="info-value highlight-val">Frontend Mock Session</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Actions Card -->
+        <section class="profile-card" aria-labelledby="actions-heading">
+          <div class="card-header">
+            <span class="card-icon" aria-hidden="true">⚡</span>
+            <h2 id="actions-heading">Quick Actions</h2>
+          </div>
+
+          <div class="actions-list">
+            <a routerLink="/orders" class="action-btn primary-action">
+              <span class="action-icon" aria-hidden="true">📦</span>
+              <div class="action-text">
+                <strong>View My Orders</strong>
+                <small>Track live deliveries & view past receipts</small>
+              </div>
+              <span class="action-arrow" aria-hidden="true">→</span>
+            </a>
+
+            <a routerLink="/menu" class="action-btn secondary-action">
+              <span class="action-icon" aria-hidden="true">🍽️</span>
+              <div class="action-text">
+                <strong>Explore Menu</strong>
+                <small>Discover chef specials and artisan dishes</small>
+              </div>
+              <span class="action-arrow" aria-hidden="true">→</span>
+            </a>
+
+            <button type="button" class="action-btn danger-action" (click)="logout()">
+              <span class="action-icon" aria-hidden="true">🚪</span>
+              <div class="action-text">
+                <strong>Logout</strong>
+                <small>End your current session safely</small>
+              </div>
+              <span class="action-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </section>
+
+      </div>
+    } @else {
+      <!-- Unauthenticated fallback / safety state -->
+      <div class="unauthenticated-card" role="alert">
+        <h2>No Active Session</h2>
+        <p>Please log in to view your profile and account information.</p>
+        <a routerLink="/login" class="login-redirect-btn">Go to Login</a>
+      </div>
+    }
+
+  </div>
+</div>

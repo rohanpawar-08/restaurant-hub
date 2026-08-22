@@ -1,0 +1,326 @@
+@use "sass:color";
+@use "../../../../../styles/abstracts/variables" as *;
+
+.auth-page {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-md $space-sm;
+  background: linear-gradient(135deg, $background-light 0%, #fff 100%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: $white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  padding: 2.25rem 2rem;
+  border: 1px solid rgba($primary-color, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  @media (max-width: 480px) {
+    padding: 1.5rem 1.25rem;
+    border-radius: $radius-md;
+  }
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: rgba($primary-color, 0.12);
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .auth-title {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 0.4rem 0;
+  }
+
+  .auth-subtitle {
+    font-size: 0.9rem;
+    color: $text-light;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+.demo-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  background-color: #f0fdf4;
+  border: 1px dashed #86efac;
+  border-radius: $radius-sm;
+  margin-bottom: 1.25rem;
+
+  .demo-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .demo-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #15803d;
+    letter-spacing: 0.5px;
+  }
+
+  .demo-text {
+    font-size: 0.8rem;
+    color: #166534;
+    font-family: monospace;
+    font-weight: 600;
+  }
+
+  .demo-fill-btn {
+    padding: 0.35rem 0.65rem;
+    background-color: #22c55e;
+    color: $white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #16a34a;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #22c55e;
+    }
+  }
+}
+
+.auth-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: $radius-sm;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  &.error-alert {
+    background-color: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  &.has-error {
+    .form-label {
+      color: #dc2626;
+    }
+  }
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text-dark;
+
+  .required-star {
+    color: $primary-color;
+  }
+}
+
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .form-control {
+    padding-right: 2.75rem;
+  }
+
+  .toggle-pw-btn {
+    position: absolute;
+    right: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    font-size: 1.1rem;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-color;
+      border-radius: 4px;
+    }
+  }
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: $text-dark;
+  background-color: #fafafa;
+  border: 1.5px solid #e5e7eb;
+  border-radius: $radius-sm;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+
+  &::placeholder {
+    color: #9ca3af;
+    font-size: 0.875rem;
+  }
+
+  &:hover {
+    border-color: #d1d5db;
+  }
+
+  &:focus {
+    background-color: $white;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+  }
+
+  &.is-invalid {
+    border-color: #dc2626;
+    background-color: #fffbfb;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+    }
+  }
+}
+
+.field-error {
+  font-size: 0.775rem;
+  color: #dc2626;
+  font-weight: 500;
+  margin-top: 0.15rem;
+}
+
+.submit-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $white;
+  background-color: $primary-color;
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: color.adjust($primary-color, $lightness: -5%);
+    box-shadow: 0 6px 16px rgba($primary-color, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($white, 0.3);
+  border-top-color: $white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-footer {
+  margin-top: 1.75rem;
+  text-align: center;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f3f4f6;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: $text-light;
+  }
+
+  .auth-link {
+    color: $primary-color;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 0.25rem;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-color;
+      border-radius: 2px;
+    }
+  }
+}

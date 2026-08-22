@@ -1,0 +1,86 @@
+<div class="orders-page">
+  <main class="orders-container">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="header-titles">
+        <div class="title-row">
+          <h1 class="page-title">My Orders</h1>
+          @if (totalOrdersCount() > 0) {
+            <span class="total-badge">{{ totalOrdersCount() }} Total</span>
+          }
+        </div>
+        <p class="page-subtitle">
+          Track active deliveries, review past culinary experiences, and view itemized receipts.
+        </p>
+      </div>
+
+      @if (totalOrdersCount() > 0) {
+        <a routerLink="/menu" class="btn btn-primary-outline new-order-cta">
+          <span class="cta-icon" aria-hidden="true">🍽</span>
+          <span>Order More</span>
+        </a>
+      }
+    </header>
+
+    @if (totalOrdersCount() > 0) {
+      <!-- Status Filter Tabs -->
+      <section class="filter-section" aria-label="Filter Orders by Status">
+        <div class="filter-tabs-scroll">
+          @for (filter of filterOptions; track filter.value) {
+            <button
+              type="button"
+              class="filter-tab-btn"
+              [class.active]="selectedFilter() === filter.value"
+              (click)="setFilter(filter.value)"
+            >
+              <span>{{ filter.label }}</span>
+              <span class="filter-count-chip">
+                {{ getOrderCountByStatus(filter.value) }}
+              </span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- Orders List or Filter Empty State -->
+      @if (filteredOrders().length > 0) {
+        <section class="orders-list" aria-label="Customer Orders List">
+          @for (order of filteredOrders(); track order.id) {
+            <app-order-card [order]="order" />
+          }
+        </section>
+      } @else {
+        <!-- Filter Match Empty State -->
+        <section class="filter-empty-state" role="status">
+          <div class="filter-empty-icon" aria-hidden="true">🔍</div>
+          <h2 class="empty-title">No orders found</h2>
+          <p class="empty-desc">
+            You don't have any orders matching the <strong>"{{ selectedFilter() }}"</strong> status.
+          </p>
+          <button type="button" class="btn btn-secondary" (click)="setFilter('all')">
+            Show All Orders
+          </button>
+        </section>
+      }
+    } @else {
+      <!-- Main Zero Orders Empty State -->
+      <section class="empty-orders-state" role="status">
+        <div class="empty-state-card">
+          <div class="empty-icon-wrapper" aria-hidden="true">
+            <span class="empty-icon">🍱</span>
+          </div>
+          <h2 class="empty-title">No orders yet</h2>
+          <p class="empty-desc">
+            When you place an order, it will appear here.
+          </p>
+          <div class="empty-action">
+            <a routerLink="/menu" class="btn btn-primary btn-lg">
+              <span>Explore Menu</span>
+              <span class="btn-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    }
+  </main>
+</div>

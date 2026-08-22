@@ -29,4 +29,11 @@ describe('OrderSuccess', () => {
     expect(component.getPaymentMethodLabel('upi')).toBe('UPI Payment');
     expect(component.getPaymentMethodLabel('card')).toBe('Credit / Debit Card');
   });
+
+  it('should render link to View My Orders', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const ordersLinks = compiled.querySelectorAll('a[routerLink="/orders"]');
+    expect(ordersLinks.length).toBeGreaterThanOrEqual(1);
+    expect(ordersLinks[0].textContent).toContain('View My Orders');
+  });
 });

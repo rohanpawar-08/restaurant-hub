@@ -1,0 +1,197 @@
+<article class="order-card" [class.is-expanded]="isExpanded()">
+  <!-- Main Header / Overview -->
+  <div class="order-summary-header">
+    <div class="order-main-info">
+      <div class="order-id-group">
+        <span class="order-id-label">Order</span>
+        <span class="order-id-value">{{ order().id }}</span>
+      </div>
+      <div class="order-meta-info">
+        <span class="order-date">{{ order().createdAt | date: 'medium' }}</span>
+        <span class="meta-dot" aria-hidden="true">•</span>
+        <span class="customer-name">{{ order().customer.fullName }}</span>
+      </div>
+    </div>
+
+    <div class="order-header-right">
+      <span class="status-badge" [ngClass]="getStatusClass(order().status)">
+        <span class="status-icon" aria-hidden="true">{{ getStatusIcon(order().status) }}</span>
+        <span>{{ getStatusLabel(order().status) }}</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Items Preview & Summary Row -->
+  <div class="order-quick-summary">
+    <div class="summary-preview">
+      <span class="preview-icon" aria-hidden="true">🍱</span>
+      <div class="preview-text-block">
+        <span class="items-count-badge">
+          {{ totalItemCount() }} {{ totalItemCount() === 1 ? 'item' : 'items' }}
+        </span>
+        <p class="preview-items-list">{{ itemsPreviewText() }}</p>
+      </div>
+    </div>
+
+    <div class="summary-financials">
+      <div class="payment-method-tag">
+        <span class="payment-icon" aria-hidden="true">💳</span>
+        <span>{{ getPaymentMethodLabel(order().paymentMethod) }}</span>
+      </div>
+      <div class="total-amount-block">
+        <span class="total-label">Total</span>
+        <span class="total-value">
+          {{ order().total | currency: 'INR' : 'symbol' : '1.0-2' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expand/Collapse Details Action -->
+  <div class="order-card-actions">
+    <button
+      type="button"
+      class="toggle-details-btn"
+      (click)="toggleDetails()"
+      [attr.aria-expanded]="isExpanded()"
+      [attr.aria-controls]="'order-details-' + order().id"
+    >
+      <span>{{ isExpanded() ? 'Hide Order Details' : 'View Order Details' }}</span>
+      <span class="chevron-icon" [class.rotated]="isExpanded()" aria-hidden="true">▼</span>
+    </button>
+  </div>
+
+  <!-- Expandable Details Section -->
+  @if (isExpanded()) {
+    <div [id]="'order-details-' + order().id" class="order-details-panel">
+      
+      <!-- Delivery Estimate Banner if applicable -->
+      <div class="delivery-banner">
+        <div class="banner-icon" aria-hidden="true">🛵</div>
+        <div class="banner-text">
+          <strong class="banner-title">Estimated Delivery</strong>
+          <span class="banner-desc">~{{ order().estimatedDeliveryMinutes || 35 }} minutes from order confirmation</span>
+        </div>
+      </div>
+
+      <div class="details-grid">
+        <!-- Delivery & Customer Information -->
+        <div class="detail-section delivery-info-card">
+          <h4 class="section-heading">
+            <span class="heading-icon" aria-hidden="true">📍</span>
+            <span>Delivery & Customer Details</span>
+          </h4>
+
+          <div class="info-group">
+            <span class="info-label">Customer Name</span>
+            <span class="info-value font-medium">{{ order().customer.fullName }}</span>
+          </div>
+
+          <div class="info-group">
+            <span class="info-label">Phone Number</span>
+            <span class="info-value">+91 {{ order().customer.phone }}</span>
+          </div>
+
+          <div class="info-group">
+            <span class="info-label">Email Address</span>
+            <span class="info-value">{{ order().customer.email }}</span>
+          </div>
+
+          <div class="info-group">
+            <span class="info-label">Delivery Address</span>
+            <address class="info-value address-block">
+              {{ order().customer.addressLine1 }}
+              @if (order().customer.addressLine2) {
+                , {{ order().customer.addressLine2 }}
+              }
+              <br />
+              {{ order().customer.city }}, {{ order().customer.state }} - {{ order().customer.postalCode }}
+            </address>
+          </div>
+
+          @if (order().customer.deliveryInstructions) {
+            <div class="info-group delivery-note-group">
+              <span class="info-label">Delivery Instructions</span>
+              <span class="info-value note-text">"{{ order().customer.deliveryInstructions }}"</span>
+            </div>
+          }
+        </div>
+
+        <!-- Order Items & Bill Breakdown -->
+        <div class="detail-section items-bill-card">
+          <h4 class="section-heading">
+            <span class="heading-icon" aria-hidden="true">🧾</span>
+            <span>Receipt & Items Breakdown</span>
+          </h4>
+
+          <!-- Items Table -->
+          <div class="items-table">
+            <div class="items-table-header">
+              <span>Item</span>
+              <span class="col-qty">Qty</span>
+              <span class="col-price">Unit</span>
+              <span class="col-total">Total</span>
+            </div>
+
+            @for (item of order().items; track item.food.id) {
+              <div class="item-row">
+                <div class="item-cell-name">
+                  <span class="veg-badge" [class.non-veg]="!item.food.isVeg" [attr.aria-label]="item.food.isVeg ? 'Vegetarian' : 'Non-Vegetarian'">
+                    <span class="veg-dot"></span>
+                  </span>
+                  <span class="dish-name">{{ item.food.name }}</span>
+                </div>
+                <div class="item-cell-qty">× {{ item.quantity }}</div>
+                <div class="item-cell-price">
+                  {{ item.food.price | currency: 'INR' : 'symbol' : '1.0-2' }}
+                </div>
+                <div class="item-cell-total">
+                  {{ (item.food.price * item.quantity) | currency: 'INR' : 'symbol' : '1.0-2' }}
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="bill-summary-divider" aria-hidden="true"></div>
+
+          <!-- Bill Summary Calculation -->
+          <div class="bill-summary">
+            <div class="bill-line">
+              <span class="bill-label">Subtotal</span>
+              <span class="bill-value">
+                {{ order().subtotal | currency: 'INR' : 'symbol' : '1.0-2' }}
+              </span>
+            </div>
+
+            <div class="bill-line">
+              <span class="bill-label">Delivery Fee</span>
+              <span class="bill-value">
+                @if (order().deliveryFee === 0) {
+                  <span class="free-fee-badge">FREE</span>
+                } @else {
+                  {{ order().deliveryFee | currency: 'INR' : 'symbol' : '1.0-2' }}
+                }
+              </span>
+            </div>
+
+            <div class="bill-line">
+              <span class="bill-label">Payment Method</span>
+              <span class="bill-value payment-type-badge">
+                {{ getPaymentMethodLabel(order().paymentMethod) }}
+              </span>
+            </div>
+
+            <div class="bill-summary-divider thick" aria-hidden="true"></div>
+
+            <div class="bill-line grand-total-line">
+              <span class="grand-total-label">Grand Total</span>
+              <span class="grand-total-value">
+                {{ order().total | currency: 'INR' : 'symbol' : '1.0-2' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</article>

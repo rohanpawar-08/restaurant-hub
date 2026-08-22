@@ -1,0 +1,120 @@
+<div class="auth-page">
+  <div class="auth-card" role="region" aria-labelledby="login-heading">
+
+    <!-- Card Header -->
+    <header class="auth-header">
+      <div class="brand-badge" aria-hidden="true">🍽</div>
+      <h1 id="login-heading" class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Sign in to your RestaurantHub account to continue ordering.</p>
+    </header>
+
+    <!-- Error Banner -->
+    @if (errorMessage()) {
+      <div class="auth-alert error-alert" role="alert">
+        <span class="alert-icon" aria-hidden="true">⚠️</span>
+        <div class="alert-content">
+          <p>{{ errorMessage() }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- Development Demo Helper Callout -->
+    <div class="demo-callout" role="note">
+      <div class="demo-info">
+        <span class="demo-badge">Demo Account</span>
+        <span class="demo-text">rohan@restauranthub.com &bull; Password123</span>
+      </div>
+      <button
+        type="button"
+        class="demo-fill-btn"
+        (click)="fillDemoCredentials()"
+        aria-label="Autofill demo credentials"
+      >
+        Auto-Fill
+      </button>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+
+      <!-- Email Field -->
+      <div class="form-group" [class.has-error]="isFieldInvalid('email')">
+        <label for="email" class="form-label">
+          Email Address <span class="required-star">*</span>
+        </label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-control"
+          [class.is-invalid]="isFieldInvalid('email')"
+          placeholder="e.g. rohan@restauranthub.com"
+          autocomplete="email"
+        />
+        @if (isFieldInvalid('email')) {
+          <span class="field-error" role="alert">
+            {{ getFieldError('email') }}
+          </span>
+        }
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group" [class.has-error]="isFieldInvalid('password')">
+        <div class="label-row">
+          <label for="password" class="form-label">
+            Password <span class="required-star">*</span>
+          </label>
+        </div>
+        <div class="password-input-wrap">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            class="form-control"
+            [class.is-invalid]="isFieldInvalid('password')"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="toggle-pw-btn"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            (click)="togglePasswordVisibility()"
+          >
+            {{ showPassword() ? '👁️' : '🙈' }}
+          </button>
+        </div>
+        @if (isFieldInvalid('password')) {
+          <span class="field-error" role="alert">
+            {{ getFieldError('password') }}
+          </span>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="isSubmitting()"
+        aria-label="Sign in to account"
+      >
+        @if (isSubmitting()) {
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Signing In...</span>
+        } @else {
+          <span>Login</span>
+        }
+      </button>
+
+    </form>
+
+    <!-- Footer Links -->
+    <footer class="auth-footer">
+      <p>
+        Don't have an account?
+        <a routerLink="/register" class="auth-link">Register</a>
+      </p>
+    </footer>
+
+  </div>
+</div>

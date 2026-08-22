@@ -48,6 +48,7 @@
 .btn {
   display: inline-flex; align-items: center; justify-content: center; padding: .6rem 1.15rem; border-radius: $radius-md; font-weight: 700; font-size: .85rem; text-decoration: none;
   &.btn-primary { background: $primary-color; color: $white; }
+  &.btn-outline-primary { background: transparent; color: $primary-color; border: 1.5px solid $primary-color; &:hover { background: rgba($primary-color, 0.08); } }
   &.btn-secondary { background: #f1f5f9; color: $text-dark; }
 }
 
