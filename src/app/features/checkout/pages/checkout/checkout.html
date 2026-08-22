@@ -1,0 +1,433 @@
+<div class="checkout-page">
+  <!-- Checkout Page Header -->
+  <header class="checkout-header">
+    <div class="header-inner">
+      <nav class="checkout-breadcrumbs" aria-label="Checkout Progress">
+        <a routerLink="/cart" class="breadcrumb-link">🛒 Cart</a>
+        <span class="breadcrumb-separator" aria-hidden="true">›</span>
+        <span class="breadcrumb-current" aria-current="step">Checkout & Delivery</span>
+      </nav>
+      <h1 class="checkout-title">Secure Checkout</h1>
+      <p class="checkout-subtitle">
+        Enter your delivery address and choose a payment method to complete your feast.
+      </p>
+    </div>
+  </header>
+
+  <main class="checkout-content">
+    @if (!isEmpty()) {
+      <div class="checkout-layout">
+        <!-- Left Column: Checkout Multi-Section Form -->
+        <section class="form-section" aria-labelledby="form-heading">
+          <h2 id="form-heading" class="visually-hidden">Checkout Form Details</h2>
+
+          <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+            <!-- Step 1: Customer Contact Information -->
+            <div class="form-card">
+              <div class="card-header">
+                <span class="step-badge" aria-hidden="true">1</span>
+                <div>
+                  <h3 class="card-title">Contact Information</h3>
+                  <p class="card-subtitle">We'll send order updates and invoice details here.</p>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group full-width" [class.has-error]="isFieldInvalid('fullName')">
+                  <label for="fullName" class="form-label">
+                    Full Name <span class="required-star" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="fullName"
+                    type="text"
+                    formControlName="fullName"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('fullName')"
+                    placeholder="e.g. Aarav Sharma"
+                    autocomplete="name"
+                    [attr.aria-invalid]="isFieldInvalid('fullName')"
+                    [attr.aria-describedby]="isFieldInvalid('fullName') ? 'fullName-error' : null"
+                  />
+                  @if (isFieldInvalid('fullName')) {
+                    <p id="fullName-error" class="error-msg" role="alert">
+                      {{ getFieldError('fullName') }}
+                    </p>
+                  }
+                </div>
+
+                <div class="form-group" [class.has-error]="isFieldInvalid('email')">
+                  <label for="email" class="form-label">
+                    Email Address <span class="required-star" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    formControlName="email"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('email')"
+                    placeholder="e.g. aarav@example.com"
+                    autocomplete="email"
+                    [attr.aria-invalid]="isFieldInvalid('email')"
+                    [attr.aria-describedby]="isFieldInvalid('email') ? 'email-error' : null"
+                  />
+                  @if (isFieldInvalid('email')) {
+                    <p id="email-error" class="error-msg" role="alert">
+                      {{ getFieldError('email') }}
+                    </p>
+                  }
+                </div>
+
+                <div class="form-group" [class.has-error]="isFieldInvalid('phone')">
+                  <label for="phone" class="form-label">
+                    Phone Number <span class="required-star" aria-hidden="true">*</span>
+                  </label>
+                  <div class="input-with-prefix">
+                    <span class="phone-prefix" aria-hidden="true">+91</span>
+                    <input
+                      id="phone"
+                      type="tel"
+                      formControlName="phone"
+                      class="form-control phone-input"
+                      [class.is-invalid]="isFieldInvalid('phone')"
+                      placeholder="9876543210"
+                      maxlength="10"
+                      autocomplete="tel"
+                      [attr.aria-invalid]="isFieldInvalid('phone')"
+                      [attr.aria-describedby]="isFieldInvalid('phone') ? 'phone-error' : null"
+                    />
+                  </div>
+                  @if (isFieldInvalid('phone')) {
+                    <p id="phone-error" class="error-msg" role="alert">
+                      {{ getFieldError('phone') }}
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Delivery Address -->
+            <div class="form-card">
+              <div class="card-header">
+                <span class="step-badge" aria-hidden="true">2</span>
+                <div>
+                  <h3 class="card-title">Delivery Address</h3>
+                  <p class="card-subtitle">Where should our delivery partner bring your meal?</p>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group full-width" [class.has-error]="isFieldInvalid('addressLine1')">
+                  <label for="addressLine1" class="form-label">
+                    Flat / House No., Building Name, Street <span class="required-star" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="addressLine1"
+                    type="text"
+                    formControlName="addressLine1"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('addressLine1')"
+                    placeholder="e.g. Flat 402, Sunshine Apartments, MG Road"
+                    autocomplete="street-address"
+                    [attr.aria-invalid]="isFieldInvalid('addressLine1')"
+                    [attr.aria-describedby]="isFieldInvalid('addressLine1') ? 'addressLine1-error' : null"
+                  />
+                  @if (isFieldInvalid('addressLine1')) {
+                    <p id="addressLine1-error" class="error-msg" role="alert">
+                      {{ getFieldError('addressLine1') }}
+                    </p>
+                  }
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="addressLine2" class="form-label">
+                    Landmark / Area <span class="optional-tag">(Optional)</span>
+                  </label>
+                  <input
+                    id="addressLine2"
+                    type="text"
+                    formControlName="addressLine2"
+                    class="form-control"
+                    placeholder="e.g. Near City Center Mall, Indiranagar"
+                  />
+                </div>
+
+                <div class="form-group" [class.has-error]="isFieldInvalid('city')">
+                  <label for="city" class="form-label">
+                    City <span class="required-star" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="city"
+                    type="text"
+                    formControlName="city"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('city')"
+                    placeholder="e.g. Bengaluru"
+                    autocomplete="address-level2"
+                    [attr.aria-invalid]="isFieldInvalid('city')"
+                    [attr.aria-describedby]="isFieldInvalid('city') ? 'city-error' : null"
+                  />
+                  @if (isFieldInvalid('city')) {
+                    <p id="city-error" class="error-msg" role="alert">
+                      {{ getFieldError('city') }}
+                    </p>
+                  }
+                </div>
+
+                <div class="form-group" [class.has-error]="isFieldInvalid('state')">
+                  <label for="state" class="form-label">
+                    State <span class="required-star" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="state"
+                    type="text"
+                    formControlName="state"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('state')"
+                    placeholder="e.g. Karnataka"
+                    autocomplete="address-level1"
+                    [attr.aria-invalid]="isFieldInvalid('state')"
+                    [attr.aria-describedby]="isFieldInvalid('state') ? 'state-error' : null"
+                  />
+                  @if (isFieldInvalid('state')) {
+                    <p id="state-error" class="error-msg" role="alert">
+                      {{ getFieldError('state') }}
+                    </p>
+                  }
+                </div>
+
+                <div class="form-group" [class.has-error]="isFieldInvalid('postalCode')">
+                  <label for="postalCode" class="form-label">
+                    PIN Code <span class="required-star" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="postalCode"
+                    type="text"
+                    formControlName="postalCode"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('postalCode')"
+                    placeholder="560038"
+                    maxlength="6"
+                    autocomplete="postal-code"
+                    [attr.aria-invalid]="isFieldInvalid('postalCode')"
+                    [attr.aria-describedby]="isFieldInvalid('postalCode') ? 'postalCode-error' : null"
+                  />
+                  @if (isFieldInvalid('postalCode')) {
+                    <p id="postalCode-error" class="error-msg" role="alert">
+                      {{ getFieldError('postalCode') }}
+                    </p>
+                  }
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="deliveryInstructions" class="form-label">
+                    Delivery Instructions <span class="optional-tag">(Optional)</span>
+                  </label>
+                  <textarea
+                    id="deliveryInstructions"
+                    formControlName="deliveryInstructions"
+                    class="form-control textarea-control"
+                    rows="2"
+                    placeholder="e.g. Leave package at door, ring bell twice, call upon arrival"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Payment Method -->
+            <div class="form-card">
+              <div class="card-header">
+                <span class="step-badge" aria-hidden="true">3</span>
+                <div>
+                  <h3 class="card-title">Payment Method</h3>
+                  <p class="card-subtitle">Choose how you want to pay for this order.</p>
+                </div>
+              </div>
+
+              <div class="payment-options-grid" role="radiogroup" aria-label="Payment Method Selection">
+                @for (option of paymentOptions; track option.id) {
+                  <label
+                    class="payment-option-card"
+                    [class.selected]="selectedPaymentMethod() === option.id"
+                    [class.disabled-option]="!option.isAvailableForMock"
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      [value]="option.id"
+                      [checked]="selectedPaymentMethod() === option.id"
+                      (change)="onSelectPayment(option.id)"
+                      class="payment-radio-input"
+                    />
+                    <div class="payment-card-content">
+                      <div class="option-header">
+                        <span class="option-icon" aria-hidden="true">{{ option.icon }}</span>
+                        <div class="option-titles">
+                          <span class="option-title">{{ option.title }}</span>
+                          <span class="option-subtitle">{{ option.subtitle }}</span>
+                        </div>
+                        @if (option.badge) {
+                          <span
+                            class="option-badge"
+                            [class.badge-active]="option.isAvailableForMock"
+                            [class.badge-demo]="!option.isAvailableForMock"
+                          >
+                            {{ option.badge }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </label>
+                }
+              </div>
+
+              @if (onlinePaymentNotice()) {
+                <div class="payment-notice-banner" role="alert">
+                  <span class="notice-icon" aria-hidden="true">ℹ️</span>
+                  <div class="notice-text">
+                    <strong>Online Payment Notice</strong>
+                    <p>{{ onlinePaymentNotice() }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Mobile Place Order button anchor for easy access -->
+            <div class="mobile-action-bar">
+              <button
+                type="submit"
+                class="place-order-btn"
+                [disabled]="isSubmitting() || selectedPaymentMethod() !== 'cod'"
+              >
+                @if (isSubmitting()) {
+                  <span class="btn-spinner" aria-hidden="true"></span>
+                  <span>Placing Order...</span>
+                } @else {
+                  <span>Place Order • {{ grandTotal() | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                }
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Right Column: Sticky Order Summary & Disclaimers -->
+        <aside class="summary-aside" aria-labelledby="summary-title">
+          <div class="summary-card">
+            <div class="summary-header">
+              <h2 id="summary-title" class="summary-title">Order Summary</h2>
+              <span class="items-count-badge">{{ totalQuantity() }} {{ totalQuantity() === 1 ? 'item' : 'items' }}</span>
+            </div>
+
+            <!-- Mini Cart Items Preview -->
+            <div class="summary-items-list" aria-label="Cart Items Preview">
+              @for (item of cartItems(); track item.food.id) {
+                <div class="summary-item-row">
+                  <div class="summary-item-media">
+                    @if (item.food.image && !isImageFailed(item.food.id)) {
+                      <img
+                        [src]="item.food.image"
+                        [alt]="item.food.name"
+                        (error)="onImageError(item.food.id)"
+                      />
+                    } @else {
+                      <span>{{ item.food.icon || '🍽' }}</span>
+                    }
+                  </div>
+
+                  <div class="summary-item-info">
+                    <span class="summary-item-name">{{ item.food.name }}</span>
+                    <span class="summary-item-qty">Qty: {{ item.quantity }} × {{ item.food.price | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                  </div>
+
+                  <div class="summary-item-price">
+                    {{ (item.food.price * item.quantity) | currency: 'INR' : 'symbol' : '1.0-2' }}
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="summary-divider" aria-hidden="true"></div>
+
+            <!-- Billing Breakdown -->
+            <div class="summary-billing-rows">
+              <div class="billing-row">
+                <span>Subtotal</span>
+                <span>{{ subtotal() | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              </div>
+
+              <div class="billing-row">
+                <span>Delivery Fee</span>
+                @if (deliveryFee() === 0) {
+                  <span class="free-pill">FREE</span>
+                } @else {
+                  <span>{{ deliveryFee() | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                }
+              </div>
+
+              @if (deliveryFee() === 0) {
+                <div class="free-delivery-applied">
+                  <span>🎉 Free delivery applied on orders above ₹500</span>
+                </div>
+              }
+
+              <div class="summary-divider" aria-hidden="true"></div>
+
+              <div class="billing-row grand-total-row">
+                <span>Total Amount</span>
+                <span class="grand-total-amount">
+                  {{ grandTotal() | currency: 'INR' : 'symbol' : '1.0-2' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Desktop Place Order Button -->
+            <div class="desktop-action-bar">
+              <button
+                type="button"
+                class="place-order-btn"
+                [disabled]="isSubmitting() || selectedPaymentMethod() !== 'cod'"
+                (click)="onSubmit()"
+              >
+                @if (isSubmitting()) {
+                  <span class="btn-spinner" aria-hidden="true"></span>
+                  <span>Processing...</span>
+                } @else {
+                  <span>Confirm & Place Order →</span>
+                }
+              </button>
+            </div>
+
+            <div class="checkout-guarantee">
+              <div class="guarantee-item">
+                <span class="guarantee-icon">🔒</span>
+                <span>Encrypted & safe checkout</span>
+              </div>
+              <div class="guarantee-item">
+                <span class="guarantee-icon">⚡</span>
+                <span>Freshly prepared & hot delivery</span>
+              </div>
+            </div>
+
+            <div class="back-to-cart-link">
+              <a routerLink="/cart">← Modify Cart Items</a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    } @else {
+      <!-- Protected Empty Cart State -->
+      <div class="empty-checkout-state" role="status">
+        <div class="empty-icon-wrapper" aria-hidden="true">
+          <span class="empty-icon">🍽️</span>
+        </div>
+        <h2 class="empty-title">Your Cart is Empty</h2>
+        <p class="empty-desc">
+          You don't have any dishes in your cart yet. Explore our delicious menu to pick your favorites before checking out!
+        </p>
+        <div class="empty-actions">
+          <a routerLink="/menu" class="action-btn primary-action">Explore Menu</a>
+          <a routerLink="/cart" class="action-btn secondary-action">View Cart</a>
+        </div>
+      </div>
+    }
+  </main>
+</div>

@@ -1,0 +1,151 @@
+<div class="success-page">
+  <main class="success-container">
+    @if (order(); as currentOrder) {
+      <div class="confirmation-card">
+        <!-- Success Animation / Badge -->
+        <div class="success-header">
+          <div class="success-icon-badge" aria-hidden="true">
+            <span class="checkmark-icon">✓</span>
+          </div>
+          <span class="confirmed-tag">Order Confirmed</span>
+          <h1 class="success-title">Thank you for your order!</h1>
+          <p class="success-subtitle">
+            Your chef-crafted dishes are being prepared with fresh ingredients.
+          </p>
+        </div>
+
+        <!-- Order Meta Bar -->
+        <div class="order-meta-bar">
+          <div class="meta-item">
+            <span class="meta-label">Order ID</span>
+            <span class="meta-value order-id-highlight">{{ currentOrder.id }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Date & Time</span>
+            <span class="meta-value">{{ currentOrder.createdAt | date: 'medium' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Payment Method</span>
+            <span class="meta-value">{{ getPaymentMethodLabel(currentOrder.paymentMethod) }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Order Status</span>
+            <span class="status-badge status-confirmed">Confirmed</span>
+          </div>
+        </div>
+
+        <!-- Estimated Delivery Banner -->
+        <div class="delivery-estimate-card">
+          <div class="estimate-icon" aria-hidden="true">🛵</div>
+          <div class="estimate-info">
+            <h2 class="estimate-title">Estimated Delivery: ~{{ currentOrder.estimatedDeliveryMinutes || 35 }} Minutes</h2>
+            <p class="estimate-desc">
+              Delivering hot & fresh to:
+              <strong>{{ currentOrder.customer.addressLine1 }}</strong>
+              @if (currentOrder.customer.addressLine2) {
+                , {{ currentOrder.customer.addressLine2 }}
+              }
+              , {{ currentOrder.customer.city }}, {{ currentOrder.customer.state }} - {{ currentOrder.customer.postalCode }}
+            </p>
+            @if (currentOrder.customer.deliveryInstructions) {
+              <p class="delivery-notes">
+                <em>Note: "{{ currentOrder.customer.deliveryInstructions }}"</em>
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="confirmation-sections-grid">
+          <!-- Left: Customer & Delivery Details -->
+          <div class="details-card">
+            <h2 class="section-title">Customer Information</h2>
+            <div class="customer-info-list">
+              <div class="info-row">
+                <span class="info-label">Customer Name:</span>
+                <strong class="info-val">{{ currentOrder.customer.fullName }}</strong>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Phone Number:</span>
+                <span class="info-val">+91 {{ currentOrder.customer.phone }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Email Address:</span>
+                <span class="info-val">{{ currentOrder.customer.email }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Itemized Summary -->
+          <div class="details-card">
+            <h2 class="section-title">Order Items ({{ currentOrder.items.length }})</h2>
+            <div class="order-items-table">
+              @for (item of currentOrder.items; track item.food.id) {
+                <div class="order-item-row">
+                  <div class="item-summary">
+                    <span class="item-name">{{ item.food.name }}</span>
+                    <span class="item-qty-tag">× {{ item.quantity }}</span>
+                  </div>
+                  <div class="item-price">
+                    {{ (item.food.price * item.quantity) | currency: 'INR' : 'symbol' : '1.0-2' }}
+                  </div>
+                </div>
+              }
+
+              <div class="table-divider" aria-hidden="true"></div>
+
+              <div class="bill-row">
+                <span>Subtotal</span>
+                <span>{{ currentOrder.subtotal | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              </div>
+
+              <div class="bill-row">
+                <span>Delivery Fee</span>
+                @if (currentOrder.deliveryFee === 0) {
+                  <span class="free-badge">FREE</span>
+                } @else {
+                  <span>{{ currentOrder.deliveryFee | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+                }
+              </div>
+
+              <div class="table-divider" aria-hidden="true"></div>
+
+              <div class="bill-row grand-total-bill">
+                <span>Total Paid / Payable</span>
+                <span class="grand-amount">
+                  {{ currentOrder.total | currency: 'INR' : 'symbol' : '1.0-2' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-footer">
+          <a routerLink="/menu" class="btn btn-primary">
+            Explore More Dishes
+          </a>
+          <a routerLink="/" class="btn btn-secondary">
+            Back to Home
+          </a>
+        </div>
+      </div>
+    } @else {
+      <!-- Graceful Fallback for Direct Visits -->
+      <div class="no-order-card" role="status">
+        <div class="no-order-icon" aria-hidden="true">📋</div>
+        <h1 class="no-order-title">No Recent Order Found</h1>
+        <p class="no-order-desc">
+          We couldn't find an active order session. If you've just visited this page directly, feel free to browse our mouth-watering menu and place a new order!
+        </p>
+        <div class="action-footer">
+          <a routerLink="/menu" class="btn btn-primary">
+            Explore Menu
+          </a>
+          <a routerLink="/" class="btn btn-secondary">
+            Back to Home
+          </a>
+        </div>
+      </div>
+    }
+  </main>
+</div>
