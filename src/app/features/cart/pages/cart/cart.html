@@ -1,0 +1,169 @@
+<div class="cart-page">
+  <!-- Cart Header -->
+  <header class="cart-header">
+    <span class="cart-badge">Your Selection</span>
+    <h1 class="cart-title">Your Cart</h1>
+    <p class="cart-subtitle">
+      Review your chosen gourmet dishes, adjust quantities, and proceed to checkout.
+    </p>
+  </header>
+
+  <main class="cart-content">
+    @if (!isEmpty()) {
+      <div class="cart-layout">
+        <!-- Left Column: Cart Items List -->
+        <section class="items-section" aria-labelledby="items-heading">
+          <div class="items-header">
+            <h2 id="items-heading">
+              Cart Items <span class="count-tag">({{ totalQuantity() }})</span>
+            </h2>
+            <button
+              type="button"
+              class="clear-cart-btn"
+              aria-label="Clear all items from cart"
+              (click)="onClear()"
+            >
+              Clear Cart
+            </button>
+          </div>
+
+          <div class="items-list">
+            @for (item of cartItems(); track item.food.id) {
+              <article class="cart-item-card" [attr.aria-label]="item.food.name">
+                <div class="item-media">
+                  @if (item.food.image && !isImageFailed(item.food.id)) {
+                    <img
+                      [src]="item.food.image"
+                      [alt]="item.food.name"
+                      (error)="onImageError(item.food.id)"
+                    />
+                  } @else {
+                    <span>{{ item.food.icon || '🍽' }}</span>
+                  }
+                </div>
+
+                <div class="item-details">
+                  <div class="item-info">
+                    <span class="category-tag">{{ item.food.category }}</span>
+                    <h3 class="item-name">{{ item.food.name }}</h3>
+                    <span class="unit-price">
+                      {{ item.food.price | currency: 'INR' : 'symbol' : '1.0-2' }} each
+                    </span>
+                  </div>
+
+                  <div class="item-actions">
+                    <div class="quantity-controls" role="group" [attr.aria-label]="'Quantity for ' + item.food.name">
+                      <button
+                        type="button"
+                        [disabled]="item.quantity <= 1"
+                        [attr.aria-label]="'Decrease quantity of ' + item.food.name"
+                        (click)="onDecrease(item.food.id)"
+                      >
+                        −
+                      </button>
+                      <span class="qty-val" aria-live="polite">{{ item.quantity }}</span>
+                      <button
+                        type="button"
+                        [attr.aria-label]="'Increase quantity of ' + item.food.name"
+                        (click)="onIncrease(item.food.id)"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <div class="item-total">
+                      <small>Total</small>
+                      <strong>
+                        {{ (item.food.price * item.quantity) | currency: 'INR' : 'symbol' : '1.0-2' }}
+                      </strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="remove-btn"
+                      [attr.aria-label]="'Remove ' + item.food.name + ' from cart'"
+                      (click)="onRemove(item.food.id)"
+                    >
+                      🗑 Remove
+                    </button>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+
+          <div class="continue-shopping">
+            <a routerLink="/menu">← Continue Adding Dishes</a>
+          </div>
+        </section>
+
+        <!-- Right Column: Order Summary Card -->
+        <aside class="summary-card" aria-labelledby="summary-heading">
+          <h2 id="summary-heading" class="summary-title">Order Summary</h2>
+
+          <div class="delivery-perk-banner" [class.achieved]="deliveryFee() === 0">
+            @if (deliveryFee() === 0) {
+              <span>🎉 You unlocked <strong>FREE Delivery</strong>!</span>
+            } @else {
+              <div class="perk-details">
+                <span>
+                  Add <strong>{{ amountForFreeDelivery() | currency: 'INR' : 'symbol' : '1.0-2' }}</strong> for <strong>FREE Delivery</strong>
+                </span>
+                <div class="progress-bar-bg" aria-hidden="true">
+                  <div class="progress-bar-fill" [style.width.%]="freeDeliveryProgress()"></div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span>Subtotal ({{ totalQuantity() }} {{ totalQuantity() === 1 ? 'item' : 'items' }})</span>
+              <strong>{{ subtotal() | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
+            </div>
+
+            <div class="summary-row">
+              <span>Delivery Fee</span>
+              @if (deliveryFee() === 0) {
+                <span class="free-badge">FREE</span>
+              } @else {
+                <strong>{{ deliveryFee() | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
+              }
+            </div>
+
+            <div class="summary-divider" aria-hidden="true"></div>
+
+            <div class="summary-row grand-total-row">
+              <span>Grand Total</span>
+              <span class="grand-value">{{ grandTotal() | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="checkout-btn"
+            aria-label="Proceed to Checkout"
+          >
+            <span>Proceed to Checkout →</span>
+          </button>
+
+          <div class="checkout-assurance">
+            <span>🔒 Safe & encrypted checkout</span>
+          </div>
+        </aside>
+      </div>
+    } @else {
+      <!-- Empty State -->
+      <div class="empty-cart-state" role="status">
+        <div class="empty-icon" aria-hidden="true">🛒</div>
+        <h2>Your cart is empty</h2>
+        <p>
+          Looks like you haven't added anything delicious yet. Browse our chef-crafted menu and discover amazing artisan recipes!
+        </p>
+        <a routerLink="/menu" class="explore-menu-btn">
+          Explore Menu
+        </a>
+      </div>
+    }
+  </main>
+</div>

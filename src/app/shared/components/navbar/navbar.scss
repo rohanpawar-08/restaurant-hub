@@ -1,45 +1,92 @@
+@use "sass:color";
 @use "../../../../styles/abstracts/variables" as *;
+
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   padding: 1rem 8%;
-
   background: $white;
-
   box-shadow: $shadow-sm;
-
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
   font-size: 1.5rem;
   font-weight: bold;
   color: $primary-color;
-}
+  text-decoration: none;
+  outline: none;
 
-.logo span {
-  margin-left: .4rem;
+  span {
+    margin-left: 0.4rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    border-radius: $radius-sm;
+  }
 }
 
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 2rem;
   list-style: none;
+  margin: 0;
+  padding: 0;
+
+  a {
+    color: $text-dark;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    outline: none;
+
+    &:hover {
+      color: $primary-color;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary-color;
+      border-radius: 4px;
+    }
+  }
 }
 
-.nav-links a {
-  color: $text-dark;
-  font-weight: 600;
-  transition: .3s;
+.cart-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  position: relative;
+  padding: 0.25rem 0.5rem;
+  border-radius: $radius-sm;
+
+  .cart-nav-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
 }
 
-.nav-links a:hover {
-  color: $primary-color;
+.cart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: 9999px;
+  background-color: $primary-color;
+  color: $white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgba($primary-color, 0.4);
 }
 
 .auth-buttons {
@@ -49,33 +96,49 @@
 
 .login-btn,
 .register-btn {
-  padding: .7rem 1.4rem;
+  padding: 0.65rem 1.35rem;
   border-radius: $radius-sm;
   border: none;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+  }
 }
 
 .login-btn {
   background: transparent;
   border: 2px solid $primary-color;
   color: $primary-color;
+
+  &:hover {
+    background-color: rgba($primary-color, 0.08);
+  }
 }
 
 .register-btn {
   background: $primary-color;
   color: $white;
+
+  &:hover {
+    background-color: color.adjust($primary-color, $lightness: -5%);
+  }
 }
 
 @media (max-width: 768px) {
-
   .navbar {
     flex-direction: column;
     gap: 1rem;
+    padding: 1rem 1.25rem;
   }
 
   .nav-links {
-    gap: 1rem;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-
-}
+}

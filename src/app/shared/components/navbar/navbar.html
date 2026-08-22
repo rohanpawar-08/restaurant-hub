@@ -1,19 +1,30 @@
-<nav class="navbar">
+<nav class="navbar" aria-label="Main Navigation">
 
-  <div class="logo">
+  <a routerLink="/" class="logo" aria-label="RestaurantHub Home">
     🍽 <span>RestaurantHub</span>
-  </div>
+  </a>
 
   <ul class="nav-links">
     <li><a routerLink="/">Home</a></li>
     <li><a routerLink="/menu">Menu</a></li>
     <li><a routerLink="/about">About</a></li>
     <li><a routerLink="/contact">Contact</a></li>
+    <li>
+      <a routerLink="/cart" class="cart-nav-link" aria-label="Shopping Cart">
+        <span class="cart-nav-icon" aria-hidden="true">🛒</span>
+        <span>Cart</span>
+        @if (cartCount() > 0) {
+          <span class="cart-badge" [attr.aria-label]="cartCount() + ' items in cart'">
+            {{ cartCount() }}
+          </span>
+        }
+      </a>
+    </li>
   </ul>
 
   <div class="auth-buttons">
-    <button class="login-btn">Login</button>
-    <button class="register-btn">Register</button>
+    <button type="button" class="login-btn">Login</button>
+    <button type="button" class="register-btn">Register</button>
   </div>
 
 </nav>

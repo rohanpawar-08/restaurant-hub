@@ -47,16 +47,18 @@
     <div class="card-footer">
       <div class="price-container">
         <span class="price-label">Price</span>
-        <span class="price-amount">{{ food().price | currency: 'USD' : 'symbol' : '1.2-2' }}</span>
+        <span class="price-amount">{{ food().price | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
       </div>
 
       <button
         type="button"
         class="add-to-cart-btn"
+        [class.added]="isAdded()"
         [attr.aria-label]="'Add ' + food().name + ' to cart'"
+        (click)="onAddToCart()"
       >
-        <span class="btn-icon" aria-hidden="true">+</span>
-        <span>Add to Cart</span>
+        <span class="btn-icon" aria-hidden="true">{{ isAdded() ? '✓' : '+' }}</span>
+        <span>{{ isAdded() ? 'Added' : 'Add to Cart' }}</span>
       </button>
     </div>
   </div>
