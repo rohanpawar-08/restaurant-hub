@@ -11,5 +11,12 @@ import { FoodCard } from '../../../../shared/components/food-card/food-card';
 })
 export class PopularDishes {
   private readonly foodService = inject(FoodService);
+
   readonly popularDishes = this.foodService.popularFoods;
+  readonly isLoading = this.foodService.isLoading;
+  readonly errorMessage = this.foodService.errorMessage;
+
+  retry(): void {
+    this.foodService.retry();
+  }
 }

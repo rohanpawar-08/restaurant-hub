@@ -8,12 +8,41 @@
       </p>
     </div>
 
-    <div class="categories-grid">
-      @for (category of categories(); track category.id) {
-        <div class="category-item">
-          <app-category-card [category]="category"></app-category-card>
-        </div>
-      }
-    </div>
+    @if (isLoading()) {
+      <div class="categories-grid loading-grid" aria-label="Loading categories">
+        @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+          <div class="category-skeleton" aria-hidden="true">
+            <div class="skeleton-icon shimmer"></div>
+            <div class="skeleton-text-group">
+              <div class="skeleton-line title shimmer"></div>
+              <div class="skeleton-line subtitle shimmer"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (errorMessage()) {
+      <div class="state-card error-state" role="alert">
+        <div class="state-icon" aria-hidden="true">⚠️</div>
+        <h3 class="state-title">{{ errorMessage() }}</h3>
+        <p class="state-description">Please check your connection or backend server status and try again.</p>
+        <button type="button" class="retry-btn" (click)="retry()">
+          <span>Try Again</span>
+        </button>
+      </div>
+    } @else if (categories().length === 0) {
+      <div class="state-card empty-state" role="status">
+        <div class="state-icon" aria-hidden="true">🍽️</div>
+        <h3 class="state-title">No categories found</h3>
+        <p class="state-description">Menu categories are currently being updated. Please check back shortly.</p>
+      </div>
+    } @else {
+      <div class="categories-grid">
+        @for (category of categories(); track category.id) {
+          <div class="category-item">
+            <app-category-card [category]="category"></app-category-card>
+          </div>
+        }
+      </div>
+    }
   </div>
 </section>

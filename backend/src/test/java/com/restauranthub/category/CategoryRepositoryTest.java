@@ -46,20 +46,17 @@ class CategoryRepositoryTest {
     @Test
     @DisplayName("Should verify existence of category by slug")
     void shouldCheckExistsBySlug() {
-        // Arrange
-        Category category = new Category("Desserts", "desserts", true);
-        categoryRepository.save(category);
-
         // Act & Assert
+        // "desserts" is seeded via Flyway migration V3
         assertTrue(categoryRepository.existsBySlug("desserts"), "existsBySlug should return true for existing slug");
-        assertFalse(categoryRepository.existsBySlug("non-existent-slug"), "existsBySlug should return false for unknown slug");
+        assertFalse(categoryRepository.existsBySlug("non-existent-slug-xyz"), "existsBySlug should return false for unknown slug");
     }
 
     @Test
     @DisplayName("Should default active to true when using convenience constructor")
     void shouldDefaultActiveToTrue() {
         // Arrange
-        Category category = new Category("Appetizers", "appetizers");
+        Category category = new Category("Appetizers", "appetizers-test");
 
         // Act
         Category saved = categoryRepository.save(category);

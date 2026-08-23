@@ -11,5 +11,12 @@ import { CategoryCard } from '../../../../shared/components/category-card/catego
 })
 export class Categories {
   private readonly foodService = inject(FoodService);
+
   readonly categories = this.foodService.categories;
+  readonly isLoading = this.foodService.isLoading;
+  readonly errorMessage = this.foodService.errorMessage;
+
+  retry(): void {
+    this.foodService.retry();
+  }
 }

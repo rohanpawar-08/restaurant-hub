@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "../../../../../styles/abstracts/variables" as *;
 
 .menu-header,
@@ -284,9 +285,148 @@
   clip: rect(0, 0, 0, 0);
 }
 
+.state-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  max-width: 540px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+
+  &.error-state {
+    border-color: #fecaca;
+    background: #fffafa;
+  }
+
+  .state-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .state-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 0.5rem;
+  }
+
+  .state-description {
+    font-size: 0.95rem;
+    color: $text-light;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.75rem;
+  background-color: $primary-color;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba($primary-color, 0.3);
+
+  &:hover {
+    background-color: color.adjust($primary-color, $lightness: -6%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba($primary-color, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.dish-skeleton {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-media {
+  height: 200px;
+  width: 100%;
+  background: #e2e8f0;
+}
+
+.skeleton-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-line {
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 4px;
+
+  &.tag {
+    width: 30%;
+    height: 12px;
+  }
+
+  &.title {
+    width: 75%;
+    height: 20px;
+  }
+
+  &.desc {
+    width: 100%;
+    height: 36px;
+  }
+
+  &.price {
+    width: 35%;
+    height: 22px;
+  }
+}
+
+.skeleton-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.skeleton-button {
+  width: 100px;
+  height: 36px;
+  background: #e2e8f0;
+  border-radius: 0.5rem;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 @media (max-width: 768px) {
   .menu-header,
   .menu-content { padding: 1.25rem 1rem; }
   .controls-row { width: 100%; justify-content: space-between; }
   .foods-grid { gap: 1.25rem; }
 }
+

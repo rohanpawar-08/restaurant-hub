@@ -19,6 +19,8 @@ export class Menu {
   /** Source data signals */
   readonly categories = this.foodService.categories;
   readonly allFoods = this.foodService.foods;
+  readonly isLoading = this.foodService.isLoading;
+  readonly errorMessage = this.foodService.errorMessage;
 
   /** UI Filter state signals */
   readonly searchTerm = signal<string>('');
@@ -33,7 +35,11 @@ export class Menu {
     // 1. Filter by category
     const category = this.selectedCategory();
     if (category !== 'all') {
-      result = result.filter((food) => food.categorySlug === category || food.category.toLowerCase() === category.toLowerCase());
+      result = result.filter(
+        (food) =>
+          food.categorySlug === category ||
+          food.category.toLowerCase() === category.toLowerCase()
+      );
     }
 
     // 2. Filter by food diet type (veg / non-veg)
@@ -114,5 +120,9 @@ export class Menu {
     this.selectedCategory.set('all');
     this.foodType.set('all');
     this.sortOption.set('recommended');
+  }
+
+  retry(): void {
+    this.foodService.retry();
   }
 }

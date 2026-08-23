@@ -125,42 +125,85 @@
         </nav>
       </section>
 
-      <!-- Results Meta Info -->
-      <div class="results-meta" aria-live="polite">
-        <p class="results-count">
-          Showing <strong>{{ totalCount() }}</strong> {{ totalCount() === 1 ? 'dish' : 'dishes' }}
-        </p>
-
-        @if (hasActiveFilters()) {
-          <button type="button" class="reset-link-btn" (click)="resetAllFilters()">
-            Clear all filters
+      <!-- Loading State -->
+      @if (isLoading()) {
+        <div class="loading-state-wrapper" aria-label="Loading menu">
+          <div class="foods-grid loading-grid">
+            @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+              <div class="dish-skeleton" aria-hidden="true">
+                <div class="skeleton-media shimmer"></div>
+                <div class="skeleton-body">
+                  <div class="skeleton-line tag shimmer"></div>
+                  <div class="skeleton-line title shimmer"></div>
+                  <div class="skeleton-line desc shimmer"></div>
+                  <div class="skeleton-footer">
+                    <div class="skeleton-line price shimmer"></div>
+                    <div class="skeleton-button shimmer"></div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      } @else if (errorMessage()) {
+        <!-- Error State -->
+        <div class="state-card error-state" role="alert">
+          <div class="state-icon" aria-hidden="true">⚠️</div>
+          <h2 class="state-title">{{ errorMessage() }}</h2>
+          <p class="state-description">
+            We were unable to connect to the restaurant catalog. Please ensure the backend server is running and try again.
+          </p>
+          <button type="button" class="retry-btn" (click)="retry()">
+            <span>Try Again</span>
           </button>
-        }
-      </div>
-
-      <!-- Food Grid or Empty State -->
-      @if (filteredFoods().length > 0) {
-        <div class="foods-grid">
-          @for (food of filteredFoods(); track food.id) {
-            <div class="food-item">
-              <app-food-card [food]="food"></app-food-card>
-            </div>
-          }
+        </div>
+      } @else if (allFoods().length === 0) {
+        <!-- Empty Database State -->
+        <div class="state-card empty-state" role="status">
+          <div class="state-icon" aria-hidden="true">🍽️</div>
+          <h2 class="state-title">No menu items available</h2>
+          <p class="state-description">
+            Our kitchen is currently preparing fresh seasonal selections. Please check back shortly!
+          </p>
         </div>
       } @else {
-        <!-- Empty State -->
-        <div class="empty-state" role="status">
-          <div class="empty-icon-wrapper" aria-hidden="true">
-            <span class="empty-icon">🍽️</span>
-          </div>
-          <h2 class="empty-title">No dishes found</h2>
-          <p class="empty-description">
-            We couldn't find any dishes matching your current search or filter criteria. Try adjusting your keywords or clearing your active filters.
+        <!-- Results Meta Info -->
+        <div class="results-meta" aria-live="polite">
+          <p class="results-count">
+            Showing <strong>{{ totalCount() }}</strong> {{ totalCount() === 1 ? 'dish' : 'dishes' }}
           </p>
-          <button type="button" class="empty-action-btn" (click)="resetAllFilters()">
-            Reset All Filters
-          </button>
+
+          @if (hasActiveFilters()) {
+            <button type="button" class="reset-link-btn" (click)="resetAllFilters()">
+              Clear all filters
+            </button>
+          }
         </div>
+
+        <!-- Food Grid or Search Filter Empty State -->
+        @if (filteredFoods().length > 0) {
+          <div class="foods-grid">
+            @for (food of filteredFoods(); track food.id) {
+              <div class="food-item">
+                <app-food-card [food]="food"></app-food-card>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Filter Zero-Results State -->
+          <div class="empty-state" role="status">
+            <div class="empty-icon-wrapper" aria-hidden="true">
+              <span class="empty-icon">🍽️</span>
+            </div>
+            <h2 class="empty-title">No dishes found</h2>
+            <p class="empty-description">
+              We couldn't find any dishes matching your current search or filter criteria. Try adjusting your keywords or clearing your active filters.
+            </p>
+            <button type="button" class="empty-action-btn" (click)="resetAllFilters()">
+              Reset All Filters
+            </button>
+          </div>
+        }
       }
     </div>
   </main>

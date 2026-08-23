@@ -8,12 +8,46 @@
       </p>
     </div>
 
-    <div class="dishes-grid">
-      @for (dish of popularDishes(); track dish.id) {
-        <div class="dish-item">
-          <app-food-card [food]="dish"></app-food-card>
-        </div>
-      }
-    </div>
+    @if (isLoading()) {
+      <div class="dishes-grid loading-grid" aria-label="Loading popular dishes">
+        @for (item of [1, 2, 3]; track item) {
+          <div class="dish-skeleton" aria-hidden="true">
+            <div class="skeleton-media shimmer"></div>
+            <div class="skeleton-body">
+              <div class="skeleton-line tag shimmer"></div>
+              <div class="skeleton-line title shimmer"></div>
+              <div class="skeleton-line desc shimmer"></div>
+              <div class="skeleton-footer">
+                <div class="skeleton-line price shimmer"></div>
+                <div class="skeleton-button shimmer"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (errorMessage()) {
+      <div class="state-card error-state" role="alert">
+        <div class="state-icon" aria-hidden="true">⚠️</div>
+        <h3 class="state-title">{{ errorMessage() }}</h3>
+        <p class="state-description">We could not load popular recommendations right now.</p>
+        <button type="button" class="retry-btn" (click)="retry()">
+          <span>Try Again</span>
+        </button>
+      </div>
+    } @else if (popularDishes().length === 0) {
+      <div class="state-card empty-state" role="status">
+        <div class="state-icon" aria-hidden="true">🍽️</div>
+        <h3 class="state-title">No popular dishes right now</h3>
+        <p class="state-description">Please check our full menu to explore all available gourmet dishes.</p>
+      </div>
+    } @else {
+      <div class="dishes-grid">
+        @for (dish of popularDishes(); track dish.id) {
+          <div class="dish-item">
+            <app-food-card [food]="dish"></app-food-card>
+          </div>
+        }
+      </div>
+    }
   </div>
 </section>
