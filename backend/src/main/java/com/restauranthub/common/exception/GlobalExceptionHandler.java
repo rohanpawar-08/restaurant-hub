@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
-     * Handles CategoryNotFoundException when a requested resource does not exist.
+     * Handles CategoryNotFoundException when a requested category does not exist.
      * Maps to HTTP 404 Not Found.
      */
     @ExceptionHandler(CategoryNotFoundException.class)
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
             CategoryNotFoundException ex,
             HttpServletRequest request
     ) {
-        log.warn("Resource not found at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("Category not found at [{}]: {}", request.getRequestURI(), ex.getMessage());
         ErrorResponse errorResponse = ErrorResponse.of(
                 HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
@@ -40,6 +40,44 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Handles FoodNotFoundException when a requested food item does not exist.
+     * Maps to HTTP 404 Not Found.
+     */
+    @ExceptionHandler(com.restauranthub.food.exception.FoodNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleFoodNotFoundException(
+            com.restauranthub.food.exception.FoodNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Food item not found at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Handles InactiveCategoryException when attempting to assign food to an inactive category.
+     * Maps to HTTP 400 Bad Request.
+     */
+    @ExceptionHandler(com.restauranthub.food.exception.InactiveCategoryException.class)
+    public ResponseEntity<ErrorResponse> handleInactiveCategoryException(
+            com.restauranthub.food.exception.InactiveCategoryException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Inactive category error at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     /**
