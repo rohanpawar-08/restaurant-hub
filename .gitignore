@@ -42,3 +42,10 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Local Configuration & Secrets
+application-local.properties
+application-*.local.properties
+*-local.properties
+.env
+
