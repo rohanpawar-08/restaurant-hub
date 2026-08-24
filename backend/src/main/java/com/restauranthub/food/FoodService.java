@@ -8,6 +8,7 @@ import com.restauranthub.food.dto.FoodResponse;
 import com.restauranthub.food.dto.FoodUpdateRequest;
 import com.restauranthub.food.exception.FoodNotFoundException;
 import com.restauranthub.food.exception.InactiveCategoryException;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,14 +51,15 @@ public class FoodService {
             throw new InactiveCategoryException(request.categoryId());
         }
 
+        BigDecimal rating = (request.rating() != null) ? request.rating() : BigDecimal.ZERO;
         boolean popular = (request.popular() != null) ? request.popular() : false;
-        boolean available = true;
+        boolean available = (request.available() != null) ? request.available() : true;
 
         Food food = new Food(
                 request.name(),
                 request.description(),
                 request.price(),
-                request.rating(),
+                rating,
                 request.image(),
                 request.veg(),
                 popular,
@@ -70,13 +72,38 @@ public class FoodService {
     }
 
     /**
-     * Retrieves all foods, with optional filtering by categoryId or popularity.
+     * Retrieves all foods, with optional filtering by categoryId, popularity, and active category status.
      *
      * @param categoryId optional filter by category
      * @param popular optional filter for popular items
+     * @param activeOnly optional filter to only return foods from active categories
      * @return list of FoodResponse DTOs
      */
-    public List<FoodResponse> getAllFoods(Long categoryId, Boolean popular) {
+    public List<FoodResponse> getAllFoods(Long categoryId, Boolean popular, Boolean activeOnly) {
+        if (Boolean.TRUE.equals(activeOnly)) {
+            if (categoryId != null) {
+                if (!categoryRepository.existsById(categoryId)) {
+                    throw new CategoryNotFoundException(categoryId);
+                }
+                return foodRepository.findByCategoryIdAndCategoryActiveTrue(categoryId)
+                        .stream()
+                        .map(FoodResponse::fromEntity)
+                        .toList();
+            }
+
+            if (Boolean.TRUE.equals(popular)) {
+                return foodRepository.findByPopularTrueAndCategoryActiveTrue()
+                        .stream()
+                        .map(FoodResponse::fromEntity)
+                        .toList();
+            }
+
+            return foodRepository.findByCategoryActiveTrue()
+                    .stream()
+                    .map(FoodResponse::fromEntity)
+                    .toList();
+        }
+
         if (categoryId != null) {
             if (!categoryRepository.existsById(categoryId)) {
                 throw new CategoryNotFoundException(categoryId);
@@ -98,6 +125,13 @@ public class FoodService {
                 .stream()
                 .map(FoodResponse::fromEntity)
                 .toList();
+    }
+
+    /**
+     * Backward-compatible overload for getAllFoods without activeOnly filter.
+     */
+    public List<FoodResponse> getAllFoods(Long categoryId, Boolean popular) {
+        return getAllFoods(categoryId, popular, null);
     }
 
     /**
@@ -143,7 +177,8 @@ public class FoodService {
         food.setName(request.name());
         food.setDescription(request.description());
         food.setPrice(request.price());
-        food.setRating(request.rating());
+        BigDecimal rating = (request.rating() != null) ? request.rating() : food.getRating();
+        food.setRating(rating);
         food.setImage(request.image());
         food.setVeg(request.veg());
         food.setPopular(request.popular());

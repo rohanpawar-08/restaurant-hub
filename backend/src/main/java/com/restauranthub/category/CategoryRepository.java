@@ -29,4 +29,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      * @return true if a matching category exists, false otherwise
      */
     boolean existsBySlug(String slug);
+
+    /**
+     * Finds all currently active categories.
+     */
+    java.util.List<Category> findByActiveTrue();
 }

@@ -27,6 +27,20 @@ export const routes: Routes = [
             (m) => m.AdminOrders
           ),
       },
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-categories/admin-categories').then(
+            (m) => m.AdminCategories
+          ),
+      },
+      {
+        path: 'menu',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-menu/admin-menu').then(
+            (m) => m.AdminMenu
+          ),
+      },
     ],
   },
   {

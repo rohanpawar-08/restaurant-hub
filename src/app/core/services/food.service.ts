@@ -54,8 +54,12 @@ export class FoodService {
     this.loadingState.set(true);
     this.errorState.set(null);
 
-    const categories$ = this.http.get<CategoryApiResponse[]>(`${this.apiUrl}/categories`);
-    const foods$ = this.http.get<FoodApiResponse[]>(`${this.apiUrl}/foods`);
+    const categories$ = this.http.get<CategoryApiResponse[]>(`${this.apiUrl}/categories`, {
+      params: { activeOnly: 'true' },
+    });
+    const foods$ = this.http.get<FoodApiResponse[]>(`${this.apiUrl}/foods`, {
+      params: { activeOnly: 'true' },
+    });
 
     forkJoin({
       categories: categories$,
@@ -68,16 +72,22 @@ export class FoodService {
       )
       .subscribe({
         next: ({ categories, foods }) => {
-          const mappedFoods = foods.map(mapFoodApiResponseToFood);
+          const activeCategories = categories.filter((cat) => cat.active !== false);
+          const activeCategorySlugs = new Set(activeCategories.map((cat) => cat.slug));
 
-          // Calculate item counts per category slug
+          // Exclude any foods whose category is inactive from the customer menu
+          const mappedFoods = foods
+            .map(mapFoodApiResponseToFood)
+            .filter((food) => activeCategorySlugs.has(food.categorySlug));
+
+          // Calculate item counts per active category slug
           const countMap = new Map<string, number>();
           for (const food of mappedFoods) {
             const count = countMap.get(food.categorySlug) || 0;
             countMap.set(food.categorySlug, count + 1);
           }
 
-          const mappedCategories = categories.map((cat) =>
+          const mappedCategories = activeCategories.map((cat) =>
             mapCategoryApiResponseToCategory(cat, countMap.get(cat.slug) || 0)
           );
 

@@ -48,23 +48,26 @@ public class FoodController {
     }
 
     /**
-     * GET /api/v1/foods - Retrieves all food items, optionally filtered by categoryId or popularity.
+     * GET /api/v1/foods - Retrieves all food items, optionally filtered by categoryId, popularity, or active status.
      *
      * Examples:
      * - GET /api/v1/foods
      * - GET /api/v1/foods?categoryId=1
      * - GET /api/v1/foods?popular=true
+     * - GET /api/v1/foods?activeOnly=true
      *
      * @param categoryId optional category filter
      * @param popular optional popularity filter
+     * @param activeOnly optional filter to only return foods from active categories
      * @return 200 OK with list of FoodResponse DTOs
      */
     @GetMapping
     public ResponseEntity<List<FoodResponse>> getAllFoods(
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Boolean popular
+            @RequestParam(required = false) Boolean popular,
+            @RequestParam(required = false) Boolean activeOnly
     ) {
-        List<FoodResponse> foods = foodService.getAllFoods(categoryId, popular);
+        List<FoodResponse> foods = foodService.getAllFoods(categoryId, popular, activeOnly);
         return ResponseEntity.ok(foods);
     }
 

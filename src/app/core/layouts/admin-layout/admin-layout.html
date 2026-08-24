@@ -9,7 +9,7 @@
     </div>
 
     <nav class="sidebar-nav">
-      <div class="nav-section-title">MAIN</div>
+      <div class="nav-section-title">OPERATIONS</div>
       <ul class="nav-list">
         <li>
           <a
@@ -34,18 +34,32 @@
         </li>
       </ul>
 
-      <div class="nav-section-title">MANAGEMENT (SOON)</div>
+      <div class="nav-section-title">CATALOG MANAGEMENT</div>
+      <ul class="nav-list">
+        <li>
+          <a
+            routerLink="/admin/menu"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            <span class="nav-icon" aria-hidden="true">🍔</span>
+            <span>Food Menu</span>
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/admin/categories"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            <span class="nav-icon" aria-hidden="true">📑</span>
+            <span>Categories</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-section-title">ADMINISTRATION (SOON)</div>
       <ul class="nav-list placeholder-list">
-        <li class="disabled-nav-item">
-          <span class="nav-icon" aria-hidden="true">🍔</span>
-          <span>Food Menu</span>
-          <span class="badge-soon">Soon</span>
-        </li>
-        <li class="disabled-nav-item">
-          <span class="nav-icon" aria-hidden="true">📑</span>
-          <span>Categories</span>
-          <span class="badge-soon">Soon</span>
-        </li>
         <li class="disabled-nav-item">
           <span class="nav-icon" aria-hidden="true">👥</span>
           <span>Customers</span>

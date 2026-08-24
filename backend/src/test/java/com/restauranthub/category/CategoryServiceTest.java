@@ -3,8 +3,10 @@ package com.restauranthub.category;
 import com.restauranthub.category.dto.CategoryCreateRequest;
 import com.restauranthub.category.dto.CategoryResponse;
 import com.restauranthub.category.dto.CategoryUpdateRequest;
+import com.restauranthub.category.exception.CategoryInUseException;
 import com.restauranthub.category.exception.CategoryNotFoundException;
 import com.restauranthub.category.exception.DuplicateCategorySlugException;
+import com.restauranthub.food.FoodRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -26,13 +28,15 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for CategoryService using Mockito.
- * Tests business logic in isolation without starting a web server or database.
  */
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private FoodRepository foodRepository;
 
     @InjectMocks
     private CategoryService categoryService;
@@ -91,6 +95,21 @@ class CategoryServiceTest {
         assertEquals("Pizza", responses.get(0).name());
         assertEquals("Burgers", responses.get(1).name());
         verify(categoryRepository).findAll();
+    }
+
+    @Test
+    @DisplayName("Should retrieve only active categories when activeOnly is true")
+    void getAllCategories_ActiveOnly_Success() {
+        Category cat1 = new Category("Pizza", "pizza", true);
+        cat1.setId(1L);
+
+        when(categoryRepository.findByActiveTrue()).thenReturn(List.of(cat1));
+
+        List<CategoryResponse> responses = categoryService.getAllCategories(true);
+
+        assertEquals(1, responses.size());
+        assertEquals("Pizza", responses.get(0).name());
+        verify(categoryRepository).findByActiveTrue();
     }
 
     @Test
@@ -188,17 +207,37 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("Should delete category when found")
+    @DisplayName("Should delete category when found and not in use")
     void deleteCategory_Success() {
         Category existing = new Category("Pasta", "pasta", true);
         existing.setId(3L);
 
         when(categoryRepository.findById(3L)).thenReturn(Optional.of(existing));
+        when(foodRepository.existsByCategoryId(3L)).thenReturn(false);
 
         categoryService.deleteCategory(3L);
 
         verify(categoryRepository).findById(3L);
+        verify(foodRepository).existsByCategoryId(3L);
         verify(categoryRepository).delete(existing);
+    }
+
+    @Test
+    @DisplayName("Should throw CategoryInUseException when deleting category with existing food items")
+    void deleteCategory_InUse_ThrowsCategoryInUseException() {
+        Category existing = new Category("Pasta", "pasta", true);
+        existing.setId(3L);
+
+        when(categoryRepository.findById(3L)).thenReturn(Optional.of(existing));
+        when(foodRepository.existsByCategoryId(3L)).thenReturn(true);
+
+        CategoryInUseException ex = assertThrows(
+                CategoryInUseException.class,
+                () -> categoryService.deleteCategory(3L)
+        );
+
+        assertTrue(ex.getMessage().contains("still contains menu items"));
+        verify(categoryRepository, never()).delete(any(Category.class));
     }
 
     @Test

@@ -79,8 +79,8 @@ describe('Menu Component', () => {
     component = fixture.componentInstance;
 
     // Flush initial requests initiated by FoodService
-    httpMock.expectOne(`${environment.apiBaseUrl}/categories`).flush(mockCategories);
-    httpMock.expectOne(`${environment.apiBaseUrl}/foods`).flush(mockFoods);
+    httpMock.expectOne(`${environment.apiBaseUrl}/categories?activeOnly=true`).flush(mockCategories);
+    httpMock.expectOne(`${environment.apiBaseUrl}/foods?activeOnly=true`).flush(mockFoods);
 
     fixture.detectChanges();
   });

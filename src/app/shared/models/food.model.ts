@@ -10,5 +10,6 @@ export interface Food {
   icon?: string;
   isVeg: boolean;
   isPopular: boolean;
+  isAvailable?: boolean;
   preparationTime?: string;
 }

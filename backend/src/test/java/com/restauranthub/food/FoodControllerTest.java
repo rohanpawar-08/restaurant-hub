@@ -192,7 +192,7 @@ class FoodControllerTest {
                 "burgers"
         );
 
-        when(foodService.getAllFoods(null, null)).thenReturn(List.of(food));
+        when(foodService.getAllFoods(null, null, null)).thenReturn(List.of(food));
 
         mockMvc.perform(get("/api/v1/foods"))
                 .andExpect(status().isOk())
@@ -218,7 +218,7 @@ class FoodControllerTest {
                 "pizza"
         );
 
-        when(foodService.getAllFoods(1L, null)).thenReturn(List.of(food));
+        when(foodService.getAllFoods(1L, null, null)).thenReturn(List.of(food));
 
         mockMvc.perform(get("/api/v1/foods?categoryId=1"))
                 .andExpect(status().isOk())

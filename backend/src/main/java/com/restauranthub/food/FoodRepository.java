@@ -60,7 +60,35 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
     List<Food> findByCategorySlug(String slug);
 
     /**
+     * Finds all foods belonging to active categories only.
+     */
+    @EntityGraph(attributePaths = {"category"})
+    List<Food> findByCategoryActiveTrue();
+
+    /**
+     * Finds all foods belonging to a specific category ID if that category is active.
+     */
+    @EntityGraph(attributePaths = {"category"})
+    List<Food> findByCategoryIdAndCategoryActiveTrue(Long categoryId);
+
+    /**
+     * Finds all popular foods belonging to active categories.
+     */
+    @EntityGraph(attributePaths = {"category"})
+    List<Food> findByPopularTrueAndCategoryActiveTrue();
+
+    /**
      * Counts all available food items.
      */
     long countByAvailableTrue();
+
+    /**
+     * Checks if any food item references a given category ID.
+     */
+    boolean existsByCategoryId(Long categoryId);
+
+    /**
+     * Counts how many food items belong to a given category ID.
+     */
+    long countByCategoryId(Long categoryId);
 }

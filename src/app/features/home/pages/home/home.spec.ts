@@ -26,8 +26,8 @@ describe('Home', () => {
     component = fixture.componentInstance;
 
     // Handle background menu requests triggered by child components
-    httpMock.expectOne(`${environment.apiBaseUrl}/categories`).flush([]);
-    httpMock.expectOne(`${environment.apiBaseUrl}/foods`).flush([]);
+    httpMock.expectOne(`${environment.apiBaseUrl}/categories?activeOnly=true`).flush([]);
+    httpMock.expectOne(`${environment.apiBaseUrl}/foods?activeOnly=true`).flush([]);
 
     await fixture.whenStable();
   });

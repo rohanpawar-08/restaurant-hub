@@ -57,6 +57,7 @@ class FoodServiceTest {
                 "/images/margherita.png",
                 true,
                 true,
+                true,
                 1L
         );
 
@@ -94,6 +95,104 @@ class FoodServiceTest {
     }
 
     @Test
+    @DisplayName("Should create food with default neutral rating 0.0 and available true when omitted")
+    void createFood_DefaultRatingAndAvailable_Success() {
+        Category category = new Category("Pizza", "pizza", true);
+        category.setId(1L);
+
+        FoodCreateRequest request = new FoodCreateRequest(
+                "Margherita",
+                "Classic pizza with tomato and mozzarella",
+                new BigDecimal("249.00"),
+                null,
+                null,
+                true,
+                null,
+                null,
+                1L
+        );
+
+        Food savedFood = new Food(
+                "Margherita",
+                "Classic pizza with tomato and mozzarella",
+                new BigDecimal("249.00"),
+                BigDecimal.ZERO,
+                null,
+                true,
+                false,
+                true,
+                category
+        );
+        savedFood.setId(101L);
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+        when(foodRepository.save(any(Food.class))).thenReturn(savedFood);
+
+        FoodResponse response = foodService.createFood(request);
+
+        assertNotNull(response);
+        assertEquals(BigDecimal.ZERO, response.rating());
+        assertTrue(response.available());
+        assertFalse(response.popular());
+        verify(foodRepository).save(any(Food.class));
+    }
+
+    @Test
+    @DisplayName("Should filter foods from active categories only when activeOnly is true")
+    void getAllFoods_ActiveOnly_ReturnsFoodsFromActiveCategoriesOnly() {
+        Category activeCategory = new Category("Pizza", "pizza", true);
+        activeCategory.setId(1L);
+
+        Food food1 = new Food("Margherita", "Pizza 1", new BigDecimal("200.00"), new BigDecimal("4.5"), null, true, false, true, activeCategory);
+        food1.setId(1L);
+
+        when(foodRepository.findByCategoryActiveTrue()).thenReturn(List.of(food1));
+
+        List<FoodResponse> responses = foodService.getAllFoods(null, null, true);
+
+        assertEquals(1, responses.size());
+        assertEquals("Margherita", responses.get(0).name());
+        verify(foodRepository).findByCategoryActiveTrue();
+    }
+
+    @Test
+    @DisplayName("Should filter foods from active categories by categoryId when activeOnly is true")
+    void getAllFoods_ActiveOnly_ByCategoryId_Success() {
+        Category activeCategory = new Category("Pizza", "pizza", true);
+        activeCategory.setId(1L);
+
+        Food food1 = new Food("Margherita", "Pizza 1", new BigDecimal("200.00"), new BigDecimal("4.5"), null, true, false, true, activeCategory);
+        food1.setId(1L);
+
+        when(categoryRepository.existsById(1L)).thenReturn(true);
+        when(foodRepository.findByCategoryIdAndCategoryActiveTrue(1L)).thenReturn(List.of(food1));
+
+        List<FoodResponse> responses = foodService.getAllFoods(1L, null, true);
+
+        assertEquals(1, responses.size());
+        assertEquals("Margherita", responses.get(0).name());
+        verify(foodRepository).findByCategoryIdAndCategoryActiveTrue(1L);
+    }
+
+    @Test
+    @DisplayName("Should filter popular foods from active categories when activeOnly and popular are true")
+    void getAllFoods_ActiveOnly_Popular_Success() {
+        Category activeCategory = new Category("Burgers", "burgers", true);
+        activeCategory.setId(3L);
+
+        Food food = new Food("Cheeseburger", "Juicy burger", new BigDecimal("199.00"), new BigDecimal("4.7"), null, false, true, true, activeCategory);
+        food.setId(20L);
+
+        when(foodRepository.findByPopularTrueAndCategoryActiveTrue()).thenReturn(List.of(food));
+
+        List<FoodResponse> responses = foodService.getAllFoods(null, true, true);
+
+        assertEquals(1, responses.size());
+        assertEquals("Cheeseburger", responses.get(0).name());
+        verify(foodRepository).findByPopularTrueAndCategoryActiveTrue();
+    }
+
+    @Test
     @DisplayName("Should throw CategoryNotFoundException when category does not exist during food creation")
     void createFood_CategoryNotFound_ThrowsException() {
         FoodCreateRequest request = new FoodCreateRequest(
@@ -104,6 +203,7 @@ class FoodServiceTest {
                 null,
                 true,
                 false,
+                true,
                 99L
         );
 
@@ -127,6 +227,7 @@ class FoodServiceTest {
                 null,
                 true,
                 false,
+                true,
                 2L
         );
 

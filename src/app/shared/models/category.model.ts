@@ -3,6 +3,7 @@ export interface FoodCategory {
   name: string;
   icon: string;
   slug: string;
+  isActive?: boolean;
   description?: string;
   itemCount?: number;
 }

@@ -1,0 +1,234 @@
+<div class="admin-categories-page">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-titles">
+        <h1 class="page-title">Category Management</h1>
+        <p class="page-subtitle">Organize and structure the restaurant's culinary menu categories.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-refresh" (click)="loadData()" [disabled]="isLoading()" title="Refresh Categories">
+          <span class="btn-icon">🔄</span>
+          <span>Refresh</span>
+        </button>
+        <button type="button" class="btn-primary btn-add" (click)="openAddModal()">
+          <span class="btn-icon">➕</span>
+          <span>Add Category</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Global Alert / Error State -->
+  @if (generalError()) {
+    <div class="alert alert-error" role="alert">
+      <span class="alert-icon">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-message">{{ generalError() }}</p>
+      </div>
+      <button type="button" class="btn-alert-action" (click)="loadData()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading() && categories().length === 0) {
+    <div class="loading-container" aria-label="Loading categories">
+      <div class="spinner"></div>
+      <p>Loading menu categories...</p>
+    </div>
+  } @else if (categories().length === 0) {
+    <!-- Empty State -->
+    <div class="empty-card">
+      <span class="empty-icon">📁</span>
+      <h2>No Categories Found</h2>
+      <p>Start organizing your menu by creating your first food category.</p>
+      <button type="button" class="btn-primary" (click)="openAddModal()">Create Category</button>
+    </div>
+  } @else {
+    <!-- Categories Table / Cards -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="categories-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>URL Slug</th>
+              <th>Dishes</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cat of categories(); track cat.id) {
+              <tr [class.row-inactive]="cat.isActive === false">
+                <td class="cell-category">
+                  <span class="category-icon">{{ cat.icon }}</span>
+                  <span class="category-name">{{ cat.name }}</span>
+                </td>
+                <td class="cell-slug">
+                  <code>/{{ cat.slug }}</code>
+                </td>
+                <td class="cell-dishes">
+                  <span class="dish-count-badge">{{ cat.itemCount || 0 }} items</span>
+                </td>
+                <td class="cell-status">
+                  @if (cat.isActive !== false) {
+                    <span class="status-badge status-active">Active</span>
+                  } @else {
+                    <span class="status-badge status-inactive">Inactive</span>
+                  }
+                </td>
+                <td class="cell-actions text-right">
+                  <button
+                    type="button"
+                    class="action-btn btn-edit"
+                    (click)="openEditModal(cat)"
+                    title="Edit Category Details"
+                  >
+                    ✏️ Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    class="action-btn"
+                    [class.btn-deactivate]="cat.isActive !== false"
+                    [class.btn-activate]="cat.isActive === false"
+                    (click)="toggleActive(cat)"
+                    [title]="cat.isActive !== false ? 'Deactivate Category' : 'Activate Category'"
+                  >
+                    {{ cat.isActive !== false ? '⏸ Deactivate' : '▶ Activate' }}
+                  </button>
+
+                  <button
+                    type="button"
+                    class="action-btn btn-delete"
+                    (click)="openDeleteModal(cat)"
+                    title="Delete Category"
+                  >
+                    🗑️ Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Add / Edit Category Modal -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" (click)="closeModal()" aria-modal="true" role="dialog">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2 class="modal-title">{{ editingCategory() ? 'Edit Category' : 'Add New Category' }}</h2>
+          <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close modal">✕</button>
+        </header>
+
+        <form [formGroup]="categoryForm" (ngSubmit)="onSubmitCategory()" novalidate>
+          <div class="modal-body">
+            @if (formError()) {
+              <div class="alert alert-error" role="alert">
+                <span class="alert-icon">⚠️</span>
+                <p class="alert-message">{{ formError() }}</p>
+              </div>
+            }
+
+            <div class="form-group">
+              <label for="cat-name" class="form-label">Category Name <span class="req">*</span></label>
+              <input
+                id="cat-name"
+                type="text"
+                class="form-control"
+                placeholder="e.g. Starters, Main Course, Desserts"
+                formControlName="name"
+                (input)="onNameInput()"
+                autocomplete="off"
+              />
+              @if (categoryForm.get('name')?.touched && categoryForm.get('name')?.invalid) {
+                <span class="field-error">Name is required (2–100 characters).</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="cat-slug" class="form-label">URL Slug <span class="req">*</span></label>
+              <input
+                id="cat-slug"
+                type="text"
+                class="form-control"
+                placeholder="e.g. starters, main-course, desserts"
+                formControlName="slug"
+                autocomplete="off"
+              />
+              <span class="field-hint">Used in URLs. Only lowercase letters, numbers, and hyphens.</span>
+              @if (categoryForm.get('slug')?.touched && categoryForm.get('slug')?.invalid) {
+                <span class="field-error">Valid slug is required (e.g. 'main-course').</span>
+              }
+            </div>
+
+            @if (editingCategory()) {
+              <div class="form-group form-check">
+                <label class="check-label">
+                  <input type="checkbox" formControlName="active" />
+                  <span>Category is active and visible in menus</span>
+                </label>
+              </div>
+            }
+          </div>
+
+          <footer class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isSaving()">Cancel</button>
+            <button type="submit" class="btn-primary" [disabled]="isSaving() || categoryForm.invalid">
+              @if (isSaving()) {
+                <span class="spinner-sm"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>{{ editingCategory() ? 'Save Changes' : 'Create Category' }}</span>
+              }
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Modal -->
+  @if (categoryToDelete()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()" aria-modal="true" role="dialog">
+      <div class="modal-dialog modal-dialog-sm" (click)="$event.stopPropagation()">
+        <header class="modal-header header-danger">
+          <h2 class="modal-title">Delete Category?</h2>
+          <button type="button" class="btn-close" (click)="closeDeleteModal()" aria-label="Close modal">✕</button>
+        </header>
+
+        <div class="modal-body">
+          @if (deleteError()) {
+            <div class="alert alert-error" role="alert">
+              <span class="alert-icon">⚠️</span>
+              <p class="alert-message">{{ deleteError() }}</p>
+            </div>
+          }
+
+          <p class="delete-warning-text">
+            Are you sure you want to delete category <strong>"{{ categoryToDelete()?.name }}"</strong>?
+          </p>
+          <p class="delete-subtext">
+            This action cannot be undone. If foods are still linked to this category, deletion will be blocked to preserve menu integrity.
+          </p>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting()">Cancel</button>
+          <button type="button" class="btn-danger" (click)="confirmDelete()" [disabled]="isDeleting()">
+            @if (isDeleting()) {
+              <span class="spinner-sm"></span>
+              <span>Deleting...</span>
+            } @else {
+              <span>Confirm Delete</span>
+            }
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>

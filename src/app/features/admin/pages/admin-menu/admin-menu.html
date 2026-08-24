@@ -1,0 +1,378 @@
+<div class="admin-menu-page">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-titles">
+        <h1 class="page-title">Menu Management</h1>
+        <p class="page-subtitle">Add dishes, update pricing, customize descriptions, and manage live availability.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-refresh" (click)="loadData()" [disabled]="isLoading()" title="Refresh Menu">
+          <span class="btn-icon">🔄</span>
+          <span>Refresh</span>
+        </button>
+        <button type="button" class="btn-primary btn-add" (click)="openAddModal()">
+          <span class="btn-icon">➕</span>
+          <span>Add Menu Item</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Global Alert / Error State -->
+  @if (generalError()) {
+    <div class="alert alert-error" role="alert">
+      <span class="alert-icon">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-message">{{ generalError() }}</p>
+      </div>
+      <button type="button" class="btn-alert-action" (click)="loadData()">Retry</button>
+    </div>
+  }
+
+  <!-- Search & Filters Toolbar -->
+  <section class="filters-bar" aria-label="Admin Menu Filters">
+    <div class="search-field">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search dishes by name or category..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+      @if (searchTerm()) {
+        <button type="button" class="btn-clear-search" (click)="searchTerm.set('')">✕</button>
+      }
+    </div>
+
+    <div class="filter-controls">
+      <!-- Category Filter -->
+      <div class="select-group">
+        <label for="filter-cat" class="filter-label">Category:</label>
+        <select
+          id="filter-cat"
+          class="filter-select"
+          [value]="selectedCategoryFilter()"
+          (change)="selectedCategoryFilter.set($any($event.target).value)"
+        >
+          <option value="all">All Categories</option>
+          @for (cat of categories(); track cat.id) {
+            <option [value]="cat.slug">{{ cat.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Availability Filter -->
+      <div class="select-group">
+        <label for="filter-avail" class="filter-label">Availability:</label>
+        <select
+          id="filter-avail"
+          class="filter-select"
+          [value]="selectedAvailabilityFilter()"
+          (change)="selectedAvailabilityFilter.set($any($event.target).value)"
+        >
+          <option value="all">All Items</option>
+          <option value="available">Available Only</option>
+          <option value="unavailable">Unavailable Only</option>
+        </select>
+      </div>
+
+      <!-- Diet Filter -->
+      <div class="select-group">
+        <label for="filter-diet" class="filter-label">Diet:</label>
+        <select
+          id="filter-diet"
+          class="filter-select"
+          [value]="selectedDietFilter()"
+          (change)="selectedDietFilter.set($any($event.target).value)"
+        >
+          <option value="all">All Types</option>
+          <option value="veg">Veg Only</option>
+          <option value="non-veg">Non-Veg Only</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading State -->
+  @if (isLoading() && foods().length === 0) {
+    <div class="loading-container" aria-label="Loading dishes">
+      <div class="spinner"></div>
+      <p>Loading restaurant menu...</p>
+    </div>
+  } @else if (filteredFoods().length === 0) {
+    <!-- Empty State -->
+    <div class="empty-card">
+      <span class="empty-icon">🍽️</span>
+      <h2>No Menu Items Found</h2>
+      <p>No dishes match your active search or filters.</p>
+      @if (foods().length === 0) {
+        <button type="button" class="btn-primary" (click)="openAddModal()">Add First Dish</button>
+      }
+    </div>
+  } @else {
+    <!-- Food Management Table -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="menu-table">
+          <thead>
+            <tr>
+              <th>Dish</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Diet</th>
+              <th>Featured</th>
+              <th>Availability</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredFoods(); track item.id) {
+              <tr [class.row-unavailable]="!item.isAvailable">
+                <td class="cell-dish">
+                  <div class="dish-thumbnail">
+                    @if (item.image) {
+                      <img [src]="item.image" [alt]="item.name" class="dish-img" loading="lazy" />
+                    } @else {
+                      <span class="placeholder-icon">{{ item.icon || '🍽️' }}</span>
+                    }
+                  </div>
+                  <div class="dish-meta">
+                    <span class="dish-name">{{ item.name }}</span>
+                    <span class="dish-desc">{{ item.description }}</span>
+                  </div>
+                </td>
+                <td class="cell-category">
+                  <span class="cat-pill">{{ item.category }}</span>
+                </td>
+                <td class="cell-price">
+                  <strong>{{ item.price | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
+                </td>
+                <td class="cell-diet">
+                  @if (item.isVeg) {
+                    <span class="diet-indicator veg" title="Vegetarian">🟢 Veg</span>
+                  } @else {
+                    <span class="diet-indicator non-veg" title="Non-Vegetarian">🔴 Non-Veg</span>
+                  }
+                </td>
+                <td class="cell-popular">
+                  @if (item.isPopular) {
+                    <span class="popular-badge">⭐ Popular</span>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+                <td class="cell-avail">
+                  <button
+                    type="button"
+                    class="avail-toggle-btn"
+                    [class.is-avail]="item.isAvailable"
+                    [class.is-unavail]="!item.isAvailable"
+                    (click)="toggleAvailability(item)"
+                    [title]="item.isAvailable ? 'Click to mark as Sold Out' : 'Click to mark as Available'"
+                  >
+                    <span class="toggle-dot"></span>
+                    <span>{{ item.isAvailable ? 'Available' : 'Sold Out' }}</span>
+                  </button>
+                </td>
+                <td class="cell-actions text-right">
+                  <button
+                    type="button"
+                    class="action-btn btn-edit"
+                    (click)="openEditModal(item)"
+                    title="Edit Dish Details"
+                  >
+                    ✏️ Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    class="action-btn btn-delete"
+                    (click)="openDeleteModal(item)"
+                    title="Delete Dish"
+                  >
+                    🗑️ Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Add / Edit Food Modal -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" (click)="closeModal()" aria-modal="true" role="dialog">
+      <div class="modal-dialog modal-dialog-lg" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2 class="modal-title">{{ editingFood() ? 'Edit Menu Item' : 'Add New Menu Item' }}</h2>
+          <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close modal">✕</button>
+        </header>
+
+        <form [formGroup]="foodForm" (ngSubmit)="onSubmitFood()" novalidate>
+          <div class="modal-body">
+            @if (formError()) {
+              <div class="alert alert-error" role="alert">
+                <span class="alert-icon">⚠️</span>
+                <p class="alert-message">{{ formError() }}</p>
+              </div>
+            }
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="food-name" class="form-label">Dish Name <span class="req">*</span></label>
+                <input
+                  id="food-name"
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. Truffle Mushroom Risotto"
+                  formControlName="name"
+                  autocomplete="off"
+                />
+                @if (foodForm.get('name')?.touched && foodForm.get('name')?.invalid) {
+                  <span class="field-error">Dish name is required (2–150 characters).</span>
+                }
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="food-category" class="form-label">Category <span class="req">*</span></label>
+                <select id="food-category" class="form-control" formControlName="categoryId">
+                  @for (cat of categories(); track cat.id) {
+                    <option [value]="cat.id" [disabled]="cat.isActive === false && !editingFood()">
+                      {{ cat.name }} {{ cat.isActive === false ? '(Inactive)' : '' }}
+                    </option>
+                  }
+                </select>
+                @if (foodForm.get('categoryId')?.touched && foodForm.get('categoryId')?.invalid) {
+                  <span class="field-error">Category is required.</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="food-desc" class="form-label">Description <span class="req">*</span></label>
+              <textarea
+                id="food-desc"
+                rows="3"
+                class="form-control"
+                placeholder="Ingredients, culinary preparation, and flavor profile..."
+                formControlName="description"
+              ></textarea>
+              @if (foodForm.get('description')?.touched && foodForm.get('description')?.invalid) {
+                <span class="field-error">Description is required (5–1000 characters).</span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="food-price" class="form-label">Price (₹ INR) <span class="req">*</span></label>
+                <input
+                  id="food-price"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  class="form-control"
+                  placeholder="e.g. 349.00"
+                  formControlName="price"
+                />
+                @if (foodForm.get('price')?.touched && foodForm.get('price')?.invalid) {
+                  <span class="field-error">Price must be greater than zero.</span>
+                }
+              </div>
+
+              <div class="form-group flex-2">
+                <label for="food-image" class="form-label">Image URL / Path</label>
+                <input
+                  id="food-image"
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. assets/images/food/dish.png or https://cdn..."
+                  formControlName="image"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <div class="form-row options-row">
+              <div class="form-group form-check">
+                <label class="check-label">
+                  <input type="checkbox" formControlName="isVeg" />
+                  <span>Vegetarian Dish</span>
+                </label>
+              </div>
+
+              <div class="form-group form-check">
+                <label class="check-label">
+                  <input type="checkbox" formControlName="isPopular" />
+                  <span>⭐ Featured as Popular</span>
+                </label>
+              </div>
+
+              <div class="form-group form-check">
+                <label class="check-label">
+                  <input type="checkbox" formControlName="isAvailable" />
+                  <span>In Stock & Available</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <footer class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isSaving()">Cancel</button>
+            <button type="submit" class="btn-primary" [disabled]="isSaving() || foodForm.invalid">
+              @if (isSaving()) {
+                <span class="spinner-sm"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>{{ editingFood() ? 'Save Changes' : 'Create Menu Item' }}</span>
+              }
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Modal -->
+  @if (foodToDelete()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()" aria-modal="true" role="dialog">
+      <div class="modal-dialog modal-dialog-sm" (click)="$event.stopPropagation()">
+        <header class="modal-header header-danger">
+          <h2 class="modal-title">Delete Menu Item?</h2>
+          <button type="button" class="btn-close" (click)="closeDeleteModal()" aria-label="Close modal">✕</button>
+        </header>
+
+        <div class="modal-body">
+          @if (deleteError()) {
+            <div class="alert alert-error" role="alert">
+              <span class="alert-icon">⚠️</span>
+              <p class="alert-message">{{ deleteError() }}</p>
+            </div>
+          }
+
+          <p class="delete-warning-text">
+            Are you sure you want to delete dish <strong>"{{ foodToDelete()?.name }}"</strong>?
+          </p>
+          <p class="delete-subtext">
+            Past order receipts will remain intact due to snapshot archiving. To temporarily stop orders without deleting, use the Availability switch instead.
+          </p>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting()">Cancel</button>
+          <button type="button" class="btn-danger" (click)="confirmDelete()" [disabled]="isDeleting()">
+            @if (isDeleting()) {
+              <span class="spinner-sm"></span>
+              <span>Deleting...</span>
+            } @else {
+              <span>Confirm Delete</span>
+            }
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>

@@ -57,11 +57,14 @@ public class CategoryController {
     /**
      * Handles GET /api/v1/categories to retrieve all categories.
      *
+     * @param activeOnly optional filter to retrieve only active categories
      * @return 200 OK with list of CategoryResponse DTOs
      */
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-        List<CategoryResponse> categories = categoryService.getAllCategories();
+    public ResponseEntity<List<CategoryResponse>> getAllCategories(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean activeOnly
+    ) {
+        List<CategoryResponse> categories = categoryService.getAllCategories(activeOnly);
         return ResponseEntity.ok(categories);
     }
 

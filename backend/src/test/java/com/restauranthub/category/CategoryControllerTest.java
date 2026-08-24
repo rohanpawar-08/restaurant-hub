@@ -3,6 +3,7 @@ package com.restauranthub.category;
 import com.restauranthub.category.dto.CategoryCreateRequest;
 import com.restauranthub.category.dto.CategoryResponse;
 import com.restauranthub.category.dto.CategoryUpdateRequest;
+import com.restauranthub.category.exception.CategoryInUseException;
 import com.restauranthub.category.exception.CategoryNotFoundException;
 import com.restauranthub.category.exception.DuplicateCategorySlugException;
 import com.restauranthub.common.exception.GlobalExceptionHandler;
@@ -32,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Unit/MockMvc tests for CategoryController and GlobalExceptionHandler integration.
- * Verifies HTTP routing, status codes, request validation, and error serialization.
  */
 @ExtendWith(MockitoExtension.class)
 class CategoryControllerTest {
@@ -127,7 +127,7 @@ class CategoryControllerTest {
                 new CategoryResponse(2L, "Desserts", "desserts", true)
         );
 
-        when(categoryService.getAllCategories()).thenReturn(categories);
+        when(categoryService.getAllCategories(any())).thenReturn(categories);
 
         mockMvc.perform(get("/api/v1/categories"))
                 .andExpect(status().isOk())
@@ -215,6 +215,18 @@ class CategoryControllerTest {
 
         mockMvc.perform(delete("/api/v1/categories/1"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("DELETE /api/v1/categories/{id} - Should return 409 Conflict when category contains menu items")
+    void deleteCategory_InUse_Returns409() throws Exception {
+        doThrow(new CategoryInUseException(1L)).when(categoryService).deleteCategory(1L);
+
+        mockMvc.perform(delete("/api/v1/categories/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("This category still contains menu items. Move or remove those items before deleting the category, or deactivate the category instead."));
     }
 
     @Test

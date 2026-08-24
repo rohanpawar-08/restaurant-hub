@@ -26,7 +26,6 @@ public record FoodUpdateRequest(
         @DecimalMin(value = "0.01", message = "Price must be greater than zero")
         BigDecimal price,
 
-        @NotNull(message = "Rating is required and cannot be null")
         @DecimalMin(value = "0.0", message = "Rating must be at least 0.0")
         @DecimalMax(value = "5.0", message = "Rating cannot exceed 5.0")
         BigDecimal rating,

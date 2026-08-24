@@ -1,4 +1,4 @@
-<article class="food-card" [attr.aria-label]="food().name">
+<article class="food-card" [class.is-unavailable]="!food().isAvailable" [attr.aria-label]="food().name">
   <div class="card-media">
     @if (!imageError() && food().image) {
       <img
@@ -26,11 +26,23 @@
         <span class="diet-symbol"></span>
       </div>
 
-      <div class="rating-badge" aria-label="Rating">
-        <span class="star" aria-hidden="true">★</span>
-        <span class="rating-value">{{ food().rating }}</span>
-      </div>
+      @if (food().rating > 0) {
+        <div class="rating-badge" aria-label="Rating">
+          <span class="star" aria-hidden="true">★</span>
+          <span class="rating-value">{{ food().rating }}</span>
+        </div>
+      } @else {
+        <div class="rating-badge rating-badge-new" aria-label="New dish">
+          <span class="badge-new-text">New</span>
+        </div>
+      }
     </div>
+
+    @if (!food().isAvailable) {
+      <div class="unavailable-overlay" aria-label="Currently sold out">
+        <span class="unavailable-badge">Sold Out</span>
+      </div>
+    }
   </div>
 
   <div class="card-body">
@@ -50,16 +62,27 @@
         <span class="price-amount">{{ food().price | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
       </div>
 
-      <button
-        type="button"
-        class="add-to-cart-btn"
-        [class.added]="isAdded()"
-        [attr.aria-label]="'Add ' + food().name + ' to cart'"
-        (click)="onAddToCart()"
-      >
-        <span class="btn-icon" aria-hidden="true">{{ isAdded() ? '✓' : '+' }}</span>
-        <span>{{ isAdded() ? 'Added' : 'Add to Cart' }}</span>
-      </button>
+      @if (food().isAvailable) {
+        <button
+          type="button"
+          class="add-to-cart-btn"
+          [class.added]="isAdded()"
+          [attr.aria-label]="'Add ' + food().name + ' to cart'"
+          (click)="onAddToCart()"
+        >
+          <span class="btn-icon" aria-hidden="true">{{ isAdded() ? '✓' : '+' }}</span>
+          <span>{{ isAdded() ? 'Added' : 'Add to Cart' }}</span>
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="add-to-cart-btn btn-unavailable"
+          disabled
+          aria-label="Dish is currently unavailable"
+        >
+          <span>Unavailable</span>
+        </button>
+      }
     </div>
   </div>
 </article>

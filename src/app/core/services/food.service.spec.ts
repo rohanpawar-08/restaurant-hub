@@ -70,8 +70,8 @@ describe('FoodService', () => {
     categories = mockCategoriesResponse,
     foods = mockFoodsResponse
   ) {
-    const catReq = httpMock.expectOne(`${apiUrl}/categories`);
-    const foodReq = httpMock.expectOne(`${apiUrl}/foods`);
+    const catReq = httpMock.expectOne(`${apiUrl}/categories?activeOnly=true`);
+    const foodReq = httpMock.expectOne(`${apiUrl}/foods?activeOnly=true`);
     catReq.flush(categories);
     foodReq.flush(foods);
   }
@@ -105,6 +105,56 @@ describe('FoodService', () => {
     expect(categories[1].slug).toBe('burgers');
     expect(categories[1].icon).toBe('🍔');
     expect(categories[1].itemCount).toBe(1);
+  });
+
+  it('should exclude inactive categories and foods belonging to inactive categories', () => {
+    service = TestBed.inject(FoodService);
+
+    const mixedCategories: CategoryApiResponse[] = [
+      { id: 1, name: 'Pizza', slug: 'pizza', active: true },
+      { id: 2, name: 'Seasonal Specials', slug: 'seasonal-specials', active: false },
+    ];
+
+    const mixedFoods: FoodApiResponse[] = [
+      {
+        id: 101,
+        name: 'Margherita Pizza',
+        description: 'Cheesy pizza',
+        price: 299,
+        rating: 4.9,
+        image: '',
+        veg: true,
+        popular: true,
+        available: true,
+        categoryId: 1,
+        categoryName: 'Pizza',
+        categorySlug: 'pizza',
+      },
+      {
+        id: 103,
+        name: 'Pumpkin Risotto',
+        description: 'Winter seasonal dish',
+        price: 399,
+        rating: 4.8,
+        image: '',
+        veg: true,
+        popular: false,
+        available: true,
+        categoryId: 2,
+        categoryName: 'Seasonal Specials',
+        categorySlug: 'seasonal-specials',
+      },
+    ];
+
+    flushInitialRequests(mixedCategories, mixedFoods);
+
+    // Active category only
+    expect(service.categories().length).toBe(1);
+    expect(service.categories()[0].slug).toBe('pizza');
+
+    // Foods belonging to inactive category must be excluded
+    expect(service.foods().length).toBe(1);
+    expect(service.foods()[0].name).toBe('Margherita Pizza');
   });
 
   it('should correctly map Food API response including veg -> isVeg and popular -> isPopular', () => {
@@ -143,8 +193,8 @@ describe('FoodService', () => {
   it('should set error state signal when HTTP request fails', () => {
     service = TestBed.inject(FoodService);
 
-    const catReq = httpMock.expectOne(`${apiUrl}/categories`);
-    httpMock.expectOne(`${apiUrl}/foods`);
+    const catReq = httpMock.expectOne(`${apiUrl}/categories?activeOnly=true`);
+    httpMock.expectOne(`${apiUrl}/foods?activeOnly=true`);
 
     catReq.error(new ProgressEvent('Network error'));
 
@@ -157,8 +207,8 @@ describe('FoodService', () => {
   it('should allow retry after failure and restore state on subsequent success', () => {
     service = TestBed.inject(FoodService);
 
-    const catReq = httpMock.expectOne(`${apiUrl}/categories`);
-    httpMock.expectOne(`${apiUrl}/foods`);
+    const catReq = httpMock.expectOne(`${apiUrl}/categories?activeOnly=true`);
+    httpMock.expectOne(`${apiUrl}/foods?activeOnly=true`);
     catReq.error(new ProgressEvent('Network error'));
 
     expect(service.errorMessage()).toBe("We couldn't load the menu right now.");
@@ -167,8 +217,8 @@ describe('FoodService', () => {
     service.retry();
     expect(service.isLoading()).toBe(true);
 
-    const catReq2 = httpMock.expectOne(`${apiUrl}/categories`);
-    const foodReq2 = httpMock.expectOne(`${apiUrl}/foods`);
+    const catReq2 = httpMock.expectOne(`${apiUrl}/categories?activeOnly=true`);
+    const foodReq2 = httpMock.expectOne(`${apiUrl}/foods?activeOnly=true`);
     catReq2.flush(mockCategoriesResponse);
     foodReq2.flush(mockFoodsResponse);
 

@@ -46,13 +46,14 @@ export function mapCategoryApiResponseToCategory(
     name: dto.name,
     slug: dto.slug,
     icon: getCategoryIcon(dto.slug),
+    isActive: dto.active !== false,
     itemCount: itemCount,
   };
 }
 
 /**
  * Maps a backend FoodApiResponse DTO to the Angular frontend Food model.
- * Handles field name differences (e.g. veg -> isVeg, popular -> isPopular).
+ * Handles field name differences (e.g. veg -> isVeg, popular -> isPopular, available -> isAvailable).
  */
 export function mapFoodApiResponseToFood(dto: FoodApiResponse): Food {
   return {
@@ -67,5 +68,6 @@ export function mapFoodApiResponseToFood(dto: FoodApiResponse): Food {
     icon: getCategoryIcon(dto.categorySlug),
     isVeg: Boolean(dto.veg),
     isPopular: Boolean(dto.popular),
+    isAvailable: dto.available !== false,
   };
 }
