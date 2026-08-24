@@ -19,6 +19,7 @@ export class Navbar {
   readonly cartCount = this.cartService.totalQuantity;
   readonly isAuthenticated = this.authService.isAuthenticated;
   readonly currentUser = this.authService.currentUser;
+  readonly isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
 
   /**
    * Derived short display name for the navigation greeting.

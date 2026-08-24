@@ -123,4 +123,43 @@ describe('Navbar', () => {
     expect(badge).toBeTruthy();
     expect(badge?.textContent?.trim()).toBe('3');
   });
+
+  it('should show Admin Portal button when authenticated user has ADMIN role', async () => {
+    authServiceMock.currentUser.set({
+      id: 'USR-ADMIN',
+      fullName: 'Admin Chef',
+      email: 'admin@example.com',
+      phone: '9876543210',
+      role: 'ADMIN',
+      createdAt: '2026-01-01',
+    });
+    authServiceMock.isAuthenticated.set(true);
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const adminLink = compiled.querySelector('a[routerLink="/admin"]');
+    expect(adminLink).toBeTruthy();
+    expect(adminLink?.textContent).toContain('Admin Portal');
+  });
+
+  it('should NOT show Admin Portal button when authenticated user has CUSTOMER role', async () => {
+    authServiceMock.currentUser.set({
+      id: 'USR-CUST',
+      fullName: 'Customer Rohan',
+      email: 'rohan@example.com',
+      phone: '9876543210',
+      role: 'CUSTOMER',
+      createdAt: '2026-01-01',
+    });
+    authServiceMock.isAuthenticated.set(true);
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const adminLink = compiled.querySelector('a[routerLink="/admin"]');
+    expect(adminLink).toBeNull();
+  });
 });

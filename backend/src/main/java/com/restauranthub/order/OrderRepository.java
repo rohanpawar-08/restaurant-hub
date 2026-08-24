@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Spring Data JPA Repository for Order entity operations.
- * Enforces customer ownership queries to prevent cross-account data leakage.
+ * Supports both customer ownership-isolated queries and restaurant-wide admin order queries.
  */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -26,4 +26,28 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     @EntityGraph(attributePaths = {"items", "items.food"})
     Optional<Order> findByIdAndUserId(Long id, Long userId);
+
+    /**
+     * Admin query: Retrieves all orders restaurant-wide, sorted newest first.
+     * Eagerly fetches items to eliminate N+1 query overhead during admin dashboard rendering.
+     */
+    @EntityGraph(attributePaths = {"items", "items.food"})
+    List<Order> findAllByOrderByCreatedAtDesc();
+
+    /**
+     * Admin query: Retrieves orders by lifecycle status, sorted newest first.
+     */
+    @EntityGraph(attributePaths = {"items", "items.food"})
+    List<Order> findByStatusOrderByCreatedAtDesc(OrderStatus status);
+
+    /**
+     * Admin query: Retrieves a single order by ID with eagerly loaded items.
+     */
+    @EntityGraph(attributePaths = {"items", "items.food"})
+    Optional<Order> findWithItemsById(Long id);
+
+    /**
+     * Metrics query: Counts orders matching a specific status efficiently.
+     */
+    long countByStatus(OrderStatus status);
 }

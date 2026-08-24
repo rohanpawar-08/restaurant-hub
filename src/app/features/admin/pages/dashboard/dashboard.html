@@ -1,0 +1,134 @@
+<div class="dashboard-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Operations Dashboard</h1>
+      <p class="page-subtitle">Real-time overview of restaurant operations, live orders, and catalog status.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-refresh" (click)="loadMetrics()" [disabled]="isLoading()">
+        <span aria-hidden="true">🔄</span>
+        <span>{{ isLoading() ? 'Refreshing...' : 'Refresh Metrics' }}</span>
+      </button>
+      <a routerLink="/admin/orders" class="btn-primary-action">
+        <span>View Live Orders</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="error-alert" role="alert">
+      <div class="error-content">
+        <span class="error-icon" aria-hidden="true">⚠️</span>
+        <span class="error-message">{{ error() }}</span>
+      </div>
+      <button type="button" class="btn-retry" (click)="loadMetrics()">Try Again</button>
+    </div>
+  }
+
+  @if (isLoading() && !summary()) {
+    <div class="loading-container">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading real-time operational data...</p>
+    </div>
+  } @else if (summary(); as s) {
+    <!-- Metrics Grid -->
+    <div class="metrics-grid">
+      <!-- Total Orders Card -->
+      <div class="metric-card total-orders-card">
+        <div class="metric-header">
+          <span class="metric-label">TOTAL ORDERS</span>
+          <span class="metric-icon" aria-hidden="true">📦</span>
+        </div>
+        <div class="metric-value">{{ s.totalOrders }}</div>
+        <div class="metric-footer">Lifetime restaurant orders</div>
+      </div>
+
+      <!-- Confirmed Orders Card -->
+      <div class="metric-card confirmed-card">
+        <div class="metric-header">
+          <span class="metric-label">NEW CONFIRMED</span>
+          <span class="metric-icon" aria-hidden="true">🔔</span>
+        </div>
+        <div class="metric-value">{{ s.confirmedOrders }}</div>
+        <div class="metric-footer">Awaiting kitchen preparation</div>
+      </div>
+
+      <!-- Preparing Orders Card -->
+      <div class="metric-card preparing-card">
+        <div class="metric-header">
+          <span class="metric-label">IN PREPARATION</span>
+          <span class="metric-icon" aria-hidden="true">🍳</span>
+        </div>
+        <div class="metric-value">{{ s.preparingOrders }}</div>
+        <div class="metric-footer">Actively cooking in kitchen</div>
+      </div>
+
+      <!-- Ready Orders Card -->
+      <div class="metric-card ready-card">
+        <div class="metric-header">
+          <span class="metric-label">READY FOR DISPATCH</span>
+          <span class="metric-icon" aria-hidden="true">✨</span>
+        </div>
+        <div class="metric-value">{{ s.readyOrders }}</div>
+        <div class="metric-footer">Packaged & ready for courier</div>
+      </div>
+
+      <!-- Out for Delivery Card -->
+      <div class="metric-card delivery-card">
+        <div class="metric-header">
+          <span class="metric-label">OUT FOR DELIVERY</span>
+          <span class="metric-icon" aria-hidden="true">🛵</span>
+        </div>
+        <div class="metric-value">{{ s.outForDeliveryOrders }}</div>
+        <div class="metric-footer">En route to customer</div>
+      </div>
+
+      <!-- Total Customers Card -->
+      <div class="metric-card customers-card">
+        <div class="metric-header">
+          <span class="metric-label">CUSTOMERS</span>
+          <span class="metric-icon" aria-hidden="true">👥</span>
+        </div>
+        <div class="metric-value">{{ s.totalCustomers }}</div>
+        <div class="metric-footer">Registered customer accounts</div>
+      </div>
+
+      <!-- Menu Items Card -->
+      <div class="metric-card menu-card">
+        <div class="metric-header">
+          <span class="metric-label">ACTIVE MENU ITEMS</span>
+          <span class="metric-icon" aria-hidden="true">🍽</span>
+        </div>
+        <div class="metric-value">{{ s.activeFoods }} / {{ s.totalFoods }}</div>
+        <div class="metric-footer">Available for customer ordering</div>
+      </div>
+    </div>
+
+    <!-- Quick Operations Navigation -->
+    <div class="quick-nav-section">
+      <h2 class="section-title">Quick Operations</h2>
+      <div class="quick-cards-grid">
+        <a routerLink="/admin/orders" class="quick-action-card">
+          <div class="quick-card-icon">📋</div>
+          <div class="quick-card-info">
+            <h3>Manage Order Workflow</h3>
+            <p>Update incoming orders, dispatch couriers, and mark fulfillment status.</p>
+          </div>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <div class="quick-action-card disabled-card">
+          <div class="quick-card-icon">🍔</div>
+          <div class="quick-card-info">
+            <div class="title-with-badge">
+              <h3>Food Menu Management</h3>
+              <span class="badge-tag">Coming Soon</span>
+            </div>
+            <p>Add new dishes, update pricing, and toggle dish availability.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

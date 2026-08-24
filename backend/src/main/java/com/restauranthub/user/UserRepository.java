@@ -33,4 +33,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return true if phone exists
      */
     boolean existsByPhone(String phone);
+
+    /**
+     * Counts users with a specific role.
+     *
+     * @param role user role (CUSTOMER or ADMIN)
+     * @return number of users
+     */
+    long countByRole(UserRole role);
 }

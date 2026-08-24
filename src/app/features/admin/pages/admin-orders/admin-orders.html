@@ -1,0 +1,209 @@
+<div class="orders-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Order Management</h1>
+      <p class="page-subtitle">Track, prepare, and advance restaurant orders through fulfillment stages.</p>
+    </div>
+    <button type="button" class="btn-refresh" (click)="loadOrders()" [disabled]="isLoading()">
+      <span aria-hidden="true">🔄</span>
+      <span>{{ isLoading() ? 'Refreshing...' : 'Refresh Orders' }}</span>
+    </button>
+  </div>
+
+  <!-- Status Filter Tabs -->
+  <div class="filters-bar" role="tablist" aria-label="Order Status Filters">
+    @for (tab of filterTabs; track tab.value) {
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="selectedFilter() === tab.value"
+        class="filter-tab"
+        [class.active]="selectedFilter() === tab.value"
+        (click)="onSelectFilter(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  @if (actionError()) {
+    <div class="error-alert" role="alert">
+      <span class="error-icon" aria-hidden="true">⚠️</span>
+      <span class="error-message">{{ actionError() }}</span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-alert" role="alert">
+      <div class="error-content">
+        <span class="error-icon" aria-hidden="true">⚠️</span>
+        <span class="error-message">{{ error() }}</span>
+      </div>
+      <button type="button" class="btn-retry" (click)="loadOrders()">Try Again</button>
+    </div>
+  }
+
+  @if (isLoading() && orders().length === 0) {
+    <div class="loading-container">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading restaurant orders...</p>
+    </div>
+  } @else if (filteredOrders().length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">📭</span>
+      <h3>No orders found</h3>
+      <p>There are no orders matching the '{{ selectedFilter() }}' filter criteria.</p>
+    </div>
+  } @else {
+    <div class="orders-list">
+      @for (order of filteredOrders(); track order.id) {
+        <div class="order-card" [class.is-updating]="updatingOrderId() === order.id">
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="header-left">
+              <span class="order-id">Order #{{ order.id }}</span>
+              <span class="order-date">{{ order.createdAt | date:'medium' }}</span>
+            </div>
+            <div class="header-right">
+              <span class="payment-badge" [class.badge-cod]="order.paymentMethod === 'cod'">
+                {{ order.paymentMethod | uppercase }}
+              </span>
+              <span class="status-badge" [attr.data-status]="order.status">
+                {{ order.status | uppercase }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Body Details -->
+          <div class="card-body">
+            <!-- Customer Info -->
+            <div class="info-section">
+              <div class="section-heading">Customer Details</div>
+              <div class="info-row">
+                <strong>Name:</strong> <span>{{ order.customer.fullName }}</span>
+              </div>
+              <div class="info-row">
+                <strong>Phone:</strong> <span>{{ order.customer.phone }}</span>
+              </div>
+              <div class="info-row">
+                <strong>Email:</strong> <span>{{ order.customer.email }}</span>
+              </div>
+              <div class="info-row address-row">
+                <strong>Address:</strong>
+                <span>
+                  {{ order.customer.addressLine1 }}
+                  @if (order.customer.addressLine2) { , {{ order.customer.addressLine2 }} }
+                  , {{ order.customer.city }}, {{ order.customer.state }} - {{ order.customer.postalCode }}
+                </span>
+              </div>
+              @if (order.customer.deliveryInstructions) {
+                <div class="info-row note-row">
+                  <strong>Notes:</strong> <span>{{ order.customer.deliveryInstructions }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Items & Financials -->
+            <div class="items-section">
+              <div class="section-heading">Ordered Items ({{ order.items.length }})</div>
+              <ul class="items-list">
+                @for (item of order.items; track item.food.id) {
+                  <li class="item-row">
+                    <span class="item-name">{{ item.food.name }} × {{ item.quantity }}</span>
+                    <span class="item-price">{{ item.food.price * item.quantity | currency:'INR':'symbol':'1.2-2' }}</span>
+                  </li>
+                }
+              </ul>
+              <div class="totals-summary">
+                <div class="totals-row">
+                  <span>Subtotal:</span>
+                  <span>{{ order.subtotal | currency:'INR':'symbol':'1.2-2' }}</span>
+                </div>
+                <div class="totals-row">
+                  <span>Delivery Fee:</span>
+                  <span>{{ order.deliveryFee === 0 ? 'FREE' : (order.deliveryFee | currency:'INR':'symbol':'1.2-2') }}</span>
+                </div>
+                <div class="totals-row grand-total">
+                  <span>Total Amount:</span>
+                  <span>{{ order.total | currency:'INR':'symbol':'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Actions / Status Transitions -->
+          <div class="card-actions">
+            <div class="actions-label">Next Action:</div>
+
+            <div class="action-buttons">
+              @if (order.status === 'confirmed') {
+                <button
+                  type="button"
+                  class="btn-action btn-start-prep"
+                  [disabled]="updatingOrderId() === order.id"
+                  (click)="updateStatus(order.id, 'preparing')"
+                >
+                  🍳 Start Preparing
+                </button>
+                <button
+                  type="button"
+                  class="btn-action btn-cancel"
+                  [disabled]="updatingOrderId() === order.id"
+                  (click)="updateStatus(order.id, 'cancelled')"
+                >
+                  ❌ Cancel Order
+                </button>
+              } @else if (order.status === 'preparing') {
+                <button
+                  type="button"
+                  class="btn-action btn-mark-ready"
+                  [disabled]="updatingOrderId() === order.id"
+                  (click)="updateStatus(order.id, 'ready')"
+                >
+                  ✨ Mark Ready
+                </button>
+                <button
+                  type="button"
+                  class="btn-action btn-cancel"
+                  [disabled]="updatingOrderId() === order.id"
+                  (click)="updateStatus(order.id, 'cancelled')"
+                >
+                  ❌ Cancel Order
+                </button>
+              } @else if (order.status === 'ready') {
+                <button
+                  type="button"
+                  class="btn-action btn-dispatch"
+                  [disabled]="updatingOrderId() === order.id"
+                  (click)="updateStatus(order.id, 'out_for_delivery')"
+                >
+                  🛵 Out for Delivery
+                </button>
+              } @else if (order.status === 'out_for_delivery') {
+                <button
+                  type="button"
+                  class="btn-action btn-deliver"
+                  [disabled]="updatingOrderId() === order.id"
+                  (click)="updateStatus(order.id, 'delivered')"
+                >
+                  ✅ Mark Delivered
+                </button>
+              } @else if (order.status === 'delivered') {
+                <span class="status-terminal-label completed">Order Completed & Delivered</span>
+              } @else if (order.status === 'cancelled') {
+                <span class="status-terminal-label cancelled">Order Cancelled</span>
+              }
+            </div>
+
+            @if (updatingOrderId() === order.id) {
+              <div class="updating-indicator">
+                <span class="mini-spinner" aria-hidden="true"></span>
+                <span>Updating status...</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

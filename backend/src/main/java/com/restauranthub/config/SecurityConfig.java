@@ -107,20 +107,22 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/foods/**").permitAll()
                         // Public CSRF Token Endpoint
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
-                        // Public Write for Category/Food in lesson scope (requires CSRF)
-                        .requestMatchers(HttpMethod.POST, "/api/v1/categories/**", "/api/v1/foods/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**", "/api/v1/foods/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**", "/api/v1/foods/**").permitAll()
                         // Public Authentication Endpoints (require CSRF)
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         // Preflight OPTIONS requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Authenticated Authentication Endpoints
+                        // Authenticated User Session Endpoints
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").authenticated()
                         // Authenticated Customer Orders Endpoints
                         .requestMatchers("/api/v1/orders/**").authenticated()
+                        // Admin-Only Resource Management & Endpoints
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/categories/**", "/api/v1/foods/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**", "/api/v1/foods/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/categories/**", "/api/v1/foods/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**", "/api/v1/foods/**").hasRole("ADMIN")
                         // Any other request requires authentication
                         .anyRequest().authenticated()
                 )

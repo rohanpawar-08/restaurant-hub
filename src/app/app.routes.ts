@@ -1,10 +1,34 @@
 import { Routes } from '@angular/router';
 
 import { PublicLayout } from './core/layouts/public-layout/public-layout';
+import { AdminLayout } from './core/layouts/admin-layout/admin-layout';
 import { Home } from './features/home/pages/home/home';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
+  {
+    path: 'admin',
+    component: AdminLayout,
+    canActivate: [adminGuard],
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./features/admin/pages/dashboard/dashboard').then(
+            (m) => m.Dashboard
+          ),
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-orders/admin-orders').then(
+            (m) => m.AdminOrders
+          ),
+      },
+    ],
+  },
   {
     path: '',
     component: PublicLayout,

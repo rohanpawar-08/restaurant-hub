@@ -1,0 +1,94 @@
+<div class="admin-container">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" aria-label="Admin Navigation">
+    <div class="sidebar-header">
+      <a routerLink="/admin" class="sidebar-brand" aria-label="Admin Dashboard">
+        🍽 <span>RestaurantHub</span>
+      </a>
+      <span class="admin-badge">ADMIN PORTAL</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">MAIN</div>
+      <ul class="nav-list">
+        <li>
+          <a
+            routerLink="/admin"
+            [routerLinkActiveOptions]="{ exact: true }"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            <span class="nav-icon" aria-hidden="true">📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/admin/orders"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            <span class="nav-icon" aria-hidden="true">📦</span>
+            <span>Orders</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-section-title">MANAGEMENT (SOON)</div>
+      <ul class="nav-list placeholder-list">
+        <li class="disabled-nav-item">
+          <span class="nav-icon" aria-hidden="true">🍔</span>
+          <span>Food Menu</span>
+          <span class="badge-soon">Soon</span>
+        </li>
+        <li class="disabled-nav-item">
+          <span class="nav-icon" aria-hidden="true">📑</span>
+          <span>Categories</span>
+          <span class="badge-soon">Soon</span>
+        </li>
+        <li class="disabled-nav-item">
+          <span class="nav-icon" aria-hidden="true">👥</span>
+          <span>Customers</span>
+          <span class="badge-soon">Soon</span>
+        </li>
+        <li class="disabled-nav-item">
+          <span class="nav-icon" aria-hidden="true">⚙️</span>
+          <span>Settings</span>
+          <span class="badge-soon">Soon</span>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/" class="view-store-btn">
+        <span aria-hidden="true">🏪</span>
+        <span>View Customer Store</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="admin-main">
+    <!-- Top Header -->
+    <header class="admin-header">
+      <div class="header-left">
+        <span class="env-tag">Operations Console</span>
+      </div>
+
+      <div class="header-right">
+        <div class="user-info">
+          <span class="user-role-badge">ADMIN</span>
+          <span class="user-name">{{ adminName() }}</span>
+        </div>
+        <button type="button" class="btn-logout" (click)="logout()" aria-label="Sign out">
+          Sign Out
+        </button>
+      </div>
+    </header>
+
+    <!-- Subpage Content Outlet -->
+    <main class="admin-content" tabindex="-1">
+      <router-outlet />
+    </main>
+  </div>
+</div>

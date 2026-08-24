@@ -157,6 +157,25 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles InvalidOrderStatusTransitionException when an invalid order status change is attempted.
+     * Maps to HTTP 409 Conflict.
+     */
+    @ExceptionHandler(com.restauranthub.order.exception.InvalidOrderStatusTransitionException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOrderStatusTransitionException(
+            com.restauranthub.order.exception.InvalidOrderStatusTransitionException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Invalid order status transition conflict at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
      * Handles DuplicateEmailException when user registration email is already taken.
      * Maps to HTTP 409 Conflict.
      */

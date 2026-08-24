@@ -58,4 +58,9 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
      */
     @EntityGraph(attributePaths = {"category"})
     List<Food> findByCategorySlug(String slug);
+
+    /**
+     * Counts all available food items.
+     */
+    long countByAvailableTrue();
 }

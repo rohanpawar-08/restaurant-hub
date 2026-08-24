@@ -25,6 +25,11 @@
 
   @if (isAuthenticated()) {
     <div class="user-nav-section">
+      @if (isAdmin()) {
+        <a routerLink="/admin" class="admin-portal-btn" aria-label="Open Admin Operations Portal">
+          ⚡ Admin Portal
+        </a>
+      }
       <span class="user-greeting" [attr.aria-label]="'Logged in as ' + currentUser()?.fullName">
         Hi, <strong>{{ userDisplayName() }}</strong>
       </span>
