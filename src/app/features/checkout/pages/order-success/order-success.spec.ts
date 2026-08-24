@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { OrderSuccess } from './order-success';
 import { OrderService } from '../../../../core/services/order.service';
 
@@ -11,7 +13,12 @@ describe('OrderSuccess', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [OrderSuccess],
-      providers: [provideRouter([]), OrderService],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        OrderService,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(OrderSuccess);

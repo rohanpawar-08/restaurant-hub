@@ -22,6 +22,12 @@
           <h2 id="form-heading" class="visually-hidden">Checkout Form Details</h2>
 
           <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+            @if (serverErrorMessage()) {
+              <div class="alert alert-danger mb-4" role="alert">
+                <strong>Error:</strong> {{ serverErrorMessage() }}
+              </div>
+            }
+
             <!-- Step 1: Customer Contact Information -->
             <div class="form-card">
               <div class="card-header">
@@ -248,13 +254,14 @@
                   <label
                     class="payment-option-card"
                     [class.selected]="selectedPaymentMethod() === option.id"
-                    [class.disabled-option]="!option.isAvailableForMock"
+                    [class.disabled-option]="!option.isAvailable"
                   >
                     <input
                       type="radio"
                       name="paymentMethod"
                       [value]="option.id"
                       [checked]="selectedPaymentMethod() === option.id"
+                      [disabled]="!option.isAvailable"
                       (change)="onSelectPayment(option.id)"
                       class="payment-radio-input"
                     />
@@ -263,13 +270,19 @@
                         <span class="option-icon" aria-hidden="true">{{ option.icon }}</span>
                         <div class="option-titles">
                           <span class="option-title">{{ option.title }}</span>
-                          <span class="option-subtitle">{{ option.subtitle }}</span>
+                          <span class="option-subtitle">
+                            @if (!option.isAvailable) {
+                              <span class="coming-soon-text">Online payment will be available soon</span>
+                            } @else {
+                              {{ option.subtitle }}
+                            }
+                          </span>
                         </div>
                         @if (option.badge) {
                           <span
                             class="option-badge"
-                            [class.badge-active]="option.isAvailableForMock"
-                            [class.badge-demo]="!option.isAvailableForMock"
+                            [class.badge-active]="option.isAvailable"
+                            [class.badge-coming-soon]="!option.isAvailable"
                           >
                             {{ option.badge }}
                           </span>

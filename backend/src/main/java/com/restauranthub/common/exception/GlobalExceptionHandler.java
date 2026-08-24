@@ -62,6 +62,63 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles OrderNotFoundException when a requested order does not exist or is not owned by the user.
+     * Maps to HTTP 404 Not Found.
+     */
+    @ExceptionHandler(com.restauranthub.order.exception.OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFoundException(
+            com.restauranthub.order.exception.OrderNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Order not found at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Handles FoodUnavailableException when an item in the order is marked unavailable.
+     * Maps to HTTP 400 Bad Request.
+     */
+    @ExceptionHandler(com.restauranthub.order.exception.FoodUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleFoodUnavailableException(
+            com.restauranthub.order.exception.FoodUnavailableException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Food unavailable at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
+     * Handles UnsupportedPaymentMethodException when an order is submitted with an unsupported payment method.
+     * Maps to HTTP 400 Bad Request.
+     */
+    @ExceptionHandler(com.restauranthub.order.exception.UnsupportedPaymentMethodException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedPaymentMethodException(
+            com.restauranthub.order.exception.UnsupportedPaymentMethodException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Unsupported payment method at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
      * Handles InactiveCategoryException when attempting to assign food to an inactive category.
      * Maps to HTTP 400 Bad Request.
      */

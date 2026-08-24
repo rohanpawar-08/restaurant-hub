@@ -119,6 +119,8 @@ public class SecurityConfig {
                         // Authenticated Authentication Endpoints
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").authenticated()
+                        // Authenticated Customer Orders Endpoints
+                        .requestMatchers("/api/v1/orders/**").authenticated()
                         // Any other request requires authentication
                         .anyRequest().authenticated()
                 )

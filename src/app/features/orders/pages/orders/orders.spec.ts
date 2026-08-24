@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { of } from 'rxjs';
 import { Orders } from './orders';
 import { OrderService } from '../../../../core/services/order.service';
 import { Order } from '../../../../shared/models/order.model';
@@ -10,7 +13,7 @@ describe('Orders Page', () => {
   let orderService: OrderService;
 
   const mockOrder1: Order = {
-    id: 'RH-1001',
+    id: '101',
     items: [
       {
         food: {
@@ -47,7 +50,7 @@ describe('Orders Page', () => {
   };
 
   const mockOrder2: Order = {
-    id: 'RH-2002',
+    id: '202',
     items: [
       {
         food: {
@@ -86,15 +89,21 @@ describe('Orders Page', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Orders],
-      providers: [provideRouter([]), OrderService],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        OrderService,
+      ],
     }).compileComponents();
 
     orderService = TestBed.inject(OrderService);
-    // Reset order history state cleanly
     (orderService as any).orderHistoryState.set([]);
   });
 
   it('should render empty state when order history is empty', async () => {
+    vi.spyOn(orderService, 'loadOrders').mockReturnValue(of([]));
+
     fixture = TestBed.createComponent(Orders);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -107,30 +116,23 @@ describe('Orders Page', () => {
     expect(component.totalOrdersCount()).toBe(0);
   });
 
-  it('should render orders list when orders exist in history', async () => {
-    // Seed orders
-    orderService.createOrder({
-      items: mockOrder1.items,
-      customer: mockOrder1.customer,
-      paymentMethod: 'cod',
-      subtotal: 320,
-      deliveryFee: 40,
-      total: 360,
-    });
+  it('should render orders list when orders exist in backend history', async () => {
+    vi.spyOn(orderService, 'loadOrders').mockReturnValue(of([mockOrder1]));
+    (orderService as any).orderHistoryState.set([mockOrder1]);
 
     fixture = TestBed.createComponent(Orders);
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(component.totalOrdersCount()).toBeGreaterThan(0);
+    expect(component.totalOrdersCount()).toBe(1);
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('My Orders');
     expect(compiled.textContent).toContain('Aarav Sharma');
   });
 
   it('should sort orders with newest first without mutating original history', async () => {
-    // Seed with two orders of different timestamps
+    vi.spyOn(orderService, 'loadOrders').mockReturnValue(of([mockOrder1, mockOrder2]));
     (orderService as any).orderHistoryState.set([mockOrder1, mockOrder2]);
 
     fixture = TestBed.createComponent(Orders);
@@ -141,11 +143,12 @@ describe('Orders Page', () => {
     const filtered = component.filteredOrders();
     expect(filtered.length).toBe(2);
     // mockOrder2 is newer (2026-08-22) than mockOrder1 (2026-08-20)
-    expect(filtered[0].id).toBe('RH-2002');
-    expect(filtered[1].id).toBe('RH-1001');
+    expect(filtered[0].id).toBe('202');
+    expect(filtered[1].id).toBe('101');
   });
 
   it('should filter orders by status correctly', async () => {
+    vi.spyOn(orderService, 'loadOrders').mockReturnValue(of([mockOrder1, mockOrder2]));
     (orderService as any).orderHistoryState.set([mockOrder1, mockOrder2]);
 
     fixture = TestBed.createComponent(Orders);
@@ -159,11 +162,11 @@ describe('Orders Page', () => {
 
     expect(component.filteredOrders().length).toBe(1);
     expect(component.filteredOrders()[0].status).toBe('delivered');
-    expect(component.filteredOrders()[0].id).toBe('RH-2002');
+    expect(component.filteredOrders()[0].id).toBe('202');
 
     component.setFilter('confirmed');
     expect(component.filteredOrders().length).toBe(1);
-    expect(component.filteredOrders()[0].id).toBe('RH-1001');
+    expect(component.filteredOrders()[0].id).toBe('101');
 
     component.setFilter('preparing');
     expect(component.filteredOrders().length).toBe(0);

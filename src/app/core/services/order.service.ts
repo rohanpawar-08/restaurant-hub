@@ -1,157 +1,122 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, map, tap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Order } from '../../shared/models/order.model';
-import { CartItem } from '../../shared/models/cart-item.model';
-import { CustomerDetails, PaymentMethod } from '../../shared/models/checkout.model';
-
-const LATEST_ORDER_KEY = 'restaurant-hub-latest-order';
-const ORDERS_HISTORY_KEY = 'restaurant-hub-order-history';
-
-export interface CreateOrderParams {
-  items: CartItem[];
-  customer: CustomerDetails;
-  paymentMethod: PaymentMethod;
-  subtotal: number;
-  deliveryFee: number;
-  total: number;
-}
+import { CreateOrderApiRequest, OrderApiResponse } from '../api/models/order-api.model';
+import { mapOrderApiResponseToOrder } from '../api/mappers/order-api.mapper';
 
 @Injectable({
   providedIn: 'root',
 })
 export class OrderService {
-  private readonly latestOrderState = signal<Order | null>(
-    this.loadLatestOrderFromStorage()
-  );
-  private readonly orderHistoryState = signal<Order[]>(
-    this.loadOrderHistoryFromStorage()
-  );
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiBaseUrl}/orders`;
 
-  /** Public Signals */
+  private readonly latestOrderState = signal<Order | null>(null);
+  private readonly orderHistoryState = signal<Order[]>([]);
+  private readonly isLoadingState = signal<boolean>(false);
+  private readonly errorState = signal<string | null>(null);
+
+  /** Public Readonly Signals */
   readonly latestOrder = this.latestOrderState.asReadonly();
   readonly orderHistory = this.orderHistoryState.asReadonly();
+  readonly isLoading = this.isLoadingState.asReadonly();
+  readonly error = this.errorState.asReadonly();
 
   /**
-   * Create a new mock order and store it locally
+   * Create a new order via authenticated POST /api/v1/orders.
+   * Server calculates all monetary values and enforces anti-CSRF token verification.
    */
-  createOrder(params: CreateOrderParams): Order {
-    const orderId = this.generateOrderId();
-    const newOrder: Order = {
-      id: orderId,
-      items: [...params.items],
-      customer: { ...params.customer },
-      paymentMethod: params.paymentMethod,
-      subtotal: params.subtotal,
-      deliveryFee: params.deliveryFee,
-      total: params.total,
-      status: 'confirmed',
-      createdAt: new Date().toISOString(),
-      estimatedDeliveryMinutes: 35,
-    };
+  createOrder(payload: CreateOrderApiRequest): Observable<Order> {
+    this.isLoadingState.set(true);
+    this.errorState.set(null);
 
-    // Update state signals
-    this.latestOrderState.set(newOrder);
-    this.orderHistoryState.update((history) => [newOrder, ...history]);
-
-    // Persist to localStorage
-    this.saveLatestOrderToStorage(newOrder);
-    this.saveOrderHistoryToStorage(this.orderHistoryState());
-
-    return newOrder;
+    return this.http
+      .post<OrderApiResponse>(this.baseUrl, payload, { withCredentials: true })
+      .pipe(
+        map((response) => mapOrderApiResponseToOrder(response)),
+        tap((newOrder) => {
+          this.latestOrderState.set(newOrder);
+          this.orderHistoryState.update((history) => [newOrder, ...history]);
+          this.isLoadingState.set(false);
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this.isLoadingState.set(false);
+          const message =
+            err.error?.message ||
+            (err.status === 401
+              ? 'Please log in to place your order.'
+              : 'Unable to place order. Please try again.');
+          this.errorState.set(message);
+          return throwError(() => new Error(message));
+        })
+      );
   }
 
   /**
-   * Retrieve the current latest order value
+   * Load the current authenticated customer's order history via GET /api/v1/orders.
+   */
+  loadOrders(): Observable<Order[]> {
+    this.isLoadingState.set(true);
+    this.errorState.set(null);
+
+    return this.http
+      .get<OrderApiResponse[]>(this.baseUrl, { withCredentials: true })
+      .pipe(
+        map((responseList) => (responseList || []).map(mapOrderApiResponseToOrder)),
+        tap((orders) => {
+          this.orderHistoryState.set(orders);
+          this.isLoadingState.set(false);
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this.isLoadingState.set(false);
+          const message =
+            err.error?.message ||
+            (err.status === 401
+              ? 'Please log in to view your orders.'
+              : 'Failed to load order history.');
+          this.errorState.set(message);
+          return throwError(() => new Error(message));
+        })
+      );
+  }
+
+  /**
+   * Fetch a single order by ID for the authenticated customer via GET /api/v1/orders/{id}.
+   */
+  getOrderById(id: string | number): Observable<Order> {
+    this.isLoadingState.set(true);
+    this.errorState.set(null);
+
+    return this.http
+      .get<OrderApiResponse>(`${this.baseUrl}/${id}`, { withCredentials: true })
+      .pipe(
+        map((response) => mapOrderApiResponseToOrder(response)),
+        tap((order) => {
+          this.latestOrderState.set(order);
+          this.isLoadingState.set(false);
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this.isLoadingState.set(false);
+          const message = err.error?.message || 'Order not found.';
+          this.errorState.set(message);
+          return throwError(() => new Error(message));
+        })
+      );
+  }
+
+  /**
+   * Retrieve current latest order value.
    */
   getLatestOrder(): Order | null {
     return this.latestOrderState();
   }
 
   /**
-   * Clear the latest order state (e.g. after viewing confirmation if needed)
+   * Clear the latest order state.
    */
   clearLatestOrder(): void {
     this.latestOrderState.set(null);
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem(LATEST_ORDER_KEY);
-      }
-    } catch {
-      // Gracefully ignore storage removal errors
-    }
-  }
-
-  /**
-   * Generate human-readable order reference ID (e.g. RH-839201)
-   */
-  private generateOrderId(): string {
-    const timestampSegment = Date.now().toString().slice(-4);
-    const randomSegment = Math.floor(1000 + Math.random() * 9000).toString();
-    return `RH-${timestampSegment}${randomSegment}`;
-  }
-
-  /**
-   * Load latest order from localStorage
-   */
-  private loadLatestOrderFromStorage(): Order | null {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = localStorage.getItem(LATEST_ORDER_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === 'object' && parsed.id && Array.isArray(parsed.items)) {
-            return parsed as Order;
-          }
-        }
-      }
-    } catch {
-      // Gracefully handle storage errors
-    }
-    return null;
-  }
-
-  /**
-   * Save latest order to localStorage
-   */
-  private saveLatestOrderToStorage(order: Order): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(LATEST_ORDER_KEY, JSON.stringify(order));
-      }
-    } catch {
-      // Gracefully ignore storage errors
-    }
-  }
-
-  /**
-   * Load order history from localStorage
-   */
-  private loadOrderHistoryFromStorage(): Order[] {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = localStorage.getItem(ORDERS_HISTORY_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            return parsed;
-          }
-        }
-      }
-    } catch {
-      // Gracefully handle storage errors
-    }
-    return [];
-  }
-
-  /**
-   * Save order history to localStorage
-   */
-  private saveOrderHistoryToStorage(orders: Order[]): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(ORDERS_HISTORY_KEY, JSON.stringify(orders));
-      }
-    } catch {
-      // Gracefully ignore storage errors
-    }
   }
 }

@@ -45,10 +45,14 @@ export class OrderCard {
         return 'Confirmed';
       case 'preparing':
         return 'Preparing';
+      case 'ready':
+        return 'Ready for Pickup';
       case 'out_for_delivery':
         return 'Out for Delivery';
       case 'delivered':
         return 'Delivered';
+      case 'cancelled':
+        return 'Cancelled';
       default:
         return status;
     }
@@ -61,10 +65,14 @@ export class OrderCard {
         return 'status-confirmed';
       case 'preparing':
         return 'status-preparing';
+      case 'ready':
+        return 'status-ready';
       case 'out_for_delivery':
         return 'status-out-for-delivery';
       case 'delivered':
         return 'status-delivered';
+      case 'cancelled':
+        return 'status-cancelled';
       default:
         return 'status-default';
     }
@@ -77,10 +85,14 @@ export class OrderCard {
         return '✓';
       case 'preparing':
         return '🍳';
+      case 'ready':
+        return '🔔';
       case 'out_for_delivery':
         return '🛵';
       case 'delivered':
         return '📦';
+      case 'cancelled':
+        return '✕';
       default:
         return '📋';
     }

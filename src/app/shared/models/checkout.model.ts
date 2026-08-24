@@ -18,5 +18,5 @@ export interface PaymentOption {
   subtitle: string;
   icon: string;
   badge?: string;
-  isAvailableForMock: boolean;
+  isAvailable: boolean;
 }

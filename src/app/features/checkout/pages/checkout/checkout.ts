@@ -1,10 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../../../core/services/cart.service';
 import { OrderService } from '../../../../core/services/order.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { CustomerDetails, PaymentMethod, PaymentOption } from '../../../../shared/models/checkout.model';
+import { CreateOrderApiRequest } from '../../../../core/api/models/order-api.model';
 
 @Component({
   selector: 'app-checkout',
@@ -13,10 +15,11 @@ import { CustomerDetails, PaymentMethod, PaymentOption } from '../../../../share
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
-export class Checkout {
+export class Checkout implements OnInit {
   private readonly fb = inject(FormBuilder);
   readonly cartService = inject(CartService);
   private readonly orderService = inject(OrderService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   /** Direct cart signals */
@@ -32,33 +35,34 @@ export class Checkout {
   readonly isSubmitted = signal(false);
   readonly selectedPaymentMethod = signal<PaymentMethod>('cod');
   readonly onlinePaymentNotice = signal<string | null>(null);
+  readonly serverErrorMessage = signal<string | null>(null);
   private readonly failedImages = signal<Record<string, boolean>>({});
 
-  /** Payment Options */
+  /** Payment Options: COD is active, online methods are marked Coming Soon and disabled */
   readonly paymentOptions: PaymentOption[] = [
     {
       id: 'cod',
       title: 'Cash on Delivery',
       subtitle: 'Pay with cash upon food delivery',
       icon: '💵',
-      badge: 'Active for mock checkout',
-      isAvailableForMock: true,
+      badge: 'Active',
+      isAvailable: true,
     },
     {
       id: 'upi',
       title: 'UPI (GPay / PhonePe / Paytm)',
       subtitle: 'Instant payment via UPI ID or QR code',
       icon: '📱',
-      badge: 'Gateway Demo',
-      isAvailableForMock: false,
+      badge: 'Coming Soon',
+      isAvailable: false,
     },
     {
       id: 'card',
       title: 'Credit / Debit Card',
       subtitle: 'Visa, Mastercard, RuPay cards',
       icon: '💳',
-      badge: 'Gateway Demo',
-      isAvailableForMock: false,
+      badge: 'Coming Soon',
+      isAvailable: false,
     },
   ];
 
@@ -87,6 +91,17 @@ export class Checkout {
     deliveryInstructions: [''],
     paymentMethod: ['cod', [Validators.required]],
   });
+
+  ngOnInit(): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.checkoutForm.patchValue({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }
 
   /** Field validation helpers */
   isFieldInvalid(fieldName: string): boolean {
@@ -146,16 +161,16 @@ export class Checkout {
   }
 
   onSelectPayment(method: PaymentMethod): void {
-    this.selectedPaymentMethod.set(method);
-    this.checkoutForm.patchValue({ paymentMethod: method });
-
     if (method !== 'cod') {
       this.onlinePaymentNotice.set(
-        'Online payment integration will be available when the backend/payment gateway is connected. Please select Cash on Delivery to complete your order.'
+        'Online payment is not available yet. Please choose Cash on Delivery.'
       );
-    } else {
-      this.onlinePaymentNotice.set(null);
+      return;
     }
+
+    this.selectedPaymentMethod.set('cod');
+    this.checkoutForm.patchValue({ paymentMethod: 'cod' });
+    this.onlinePaymentNotice.set(null);
   }
 
   isImageFailed(foodId: string): boolean {
@@ -167,10 +182,11 @@ export class Checkout {
   }
 
   /**
-   * Handle Place Order Form Submission
+   * Handle Place Order Form Submission with Server-Authoritative Processing
    */
   onSubmit(): void {
     this.isSubmitted.set(true);
+    this.serverErrorMessage.set(null);
 
     if (this.isEmpty()) {
       return;
@@ -178,7 +194,6 @@ export class Checkout {
 
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
-      // Scroll to first error on screen
       if (typeof document !== 'undefined') {
         const firstErrorEl = document.querySelector('.form-control.is-invalid, .form-group.has-error');
         firstErrorEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -187,9 +202,9 @@ export class Checkout {
     }
 
     const currentPaymentMethod = this.selectedPaymentMethod();
-    if (currentPaymentMethod !== 'cod') {
+    if (currentPaymentMethod !== 'cod' || this.checkoutForm.get('paymentMethod')?.value !== 'cod') {
       this.onlinePaymentNotice.set(
-        'Online payment integration will be available when the backend/payment gateway is connected. Please select Cash on Delivery to complete your order.'
+        'Online payment is not available yet. Please choose Cash on Delivery.'
       );
       return;
     }
@@ -201,38 +216,38 @@ export class Checkout {
     this.isSubmitting.set(true);
 
     const formValues = this.checkoutForm.value;
-    const customer: CustomerDetails = {
-      fullName: formValues.fullName.trim(),
-      email: formValues.email.trim(),
-      phone: formValues.phone.trim(),
+    const payload: CreateOrderApiRequest = {
+      customerName: formValues.fullName.trim(),
+      customerEmail: formValues.email.trim().toLowerCase(),
+      customerPhone: formValues.phone.trim(),
       addressLine1: formValues.addressLine1.trim(),
-      addressLine2: formValues.addressLine2 ? formValues.addressLine2.trim() : undefined,
+      addressLine2: formValues.addressLine2 ? formValues.addressLine2.trim() : null,
       city: formValues.city.trim(),
       state: formValues.state.trim(),
       postalCode: formValues.postalCode.trim(),
       deliveryInstructions: formValues.deliveryInstructions
         ? formValues.deliveryInstructions.trim()
-        : undefined,
+        : null,
+      paymentMethod: 'COD',
+      items: this.cartItems().map((item) => ({
+        foodId: Number(item.food.id),
+        quantity: item.quantity,
+      })),
     };
 
-    try {
-      // 1. Create order in OrderService
-      const newOrder = this.orderService.createOrder({
-        customer,
-        paymentMethod: currentPaymentMethod,
-        items: this.cartItems(),
-        subtotal: this.subtotal(),
-        deliveryFee: this.deliveryFee(),
-        total: this.grandTotal(),
-      });
-
-      // 2. Clear cart after successful order creation
-      this.cartService.clearCart();
-
-      // 3. Navigate to order confirmation page
-      this.router.navigate(['/order-success']);
-    } catch {
-      this.isSubmitting.set(false);
-    }
+    this.orderService.createOrder(payload).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        // Clear cart only after backend confirms successful order creation
+        this.cartService.clearCart();
+        this.router.navigate(['/order-success']);
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.serverErrorMessage.set(
+          err.message || 'Unable to complete your order. Please check your network and try again.'
+        );
+      },
+    });
   }
 }

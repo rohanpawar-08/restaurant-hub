@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { OrderService } from '../../../../core/services/order.service';
 import { Order, OrderStatus } from '../../../../shared/models/order.model';
@@ -13,11 +13,13 @@ export type StatusFilterOption = 'all' | OrderStatus;
   templateUrl: './orders.html',
   styleUrl: './orders.scss',
 })
-export class Orders {
+export class Orders implements OnInit {
   private readonly orderService = inject(OrderService);
 
   /** Direct reference to order history signal from OrderService */
   readonly rawOrders = this.orderService.orderHistory;
+  readonly isLoading = this.orderService.isLoading;
+  readonly error = this.orderService.error;
 
   /** Current active status filter */
   readonly selectedFilter = signal<StatusFilterOption>('all');
@@ -55,6 +57,14 @@ export class Orders {
 
     return sorted.filter((order) => order.status === filter);
   });
+
+  ngOnInit(): void {
+    this.orderService.loadOrders().subscribe({
+      error: () => {
+        // Error state is captured reactively in orderService.error
+      },
+    });
+  }
 
   /** Set status filter */
   setFilter(filter: StatusFilterOption): void {
