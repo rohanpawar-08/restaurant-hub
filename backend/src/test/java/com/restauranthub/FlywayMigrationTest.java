@@ -16,12 +16,14 @@ class FlywayMigrationTest {
     private Flyway flyway;
 
     @Test
-    @DisplayName("Verify Flyway bean is present and V3 migration has executed")
+    @DisplayName("Verify Flyway bean is present and V4 migration has executed")
     void testFlywayMigration() {
         assertNotNull(flyway, "Flyway bean should be auto-configured by Spring Boot");
         flyway.migrate();
         assertNotNull(flyway.info().current());
-        System.out.println("Flyway current version: " + flyway.info().current().getVersion());
+        String currentVersion = flyway.info().current().getVersion().getVersion();
+        System.out.println("Flyway current version: " + currentVersion);
+        org.junit.jupiter.api.Assertions.assertEquals("4", currentVersion);
         assertTrue(flyway.info().applied().length > 0);
     }
 }

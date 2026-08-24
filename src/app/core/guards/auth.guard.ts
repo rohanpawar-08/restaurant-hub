@@ -6,26 +6,38 @@ import {
   RouterStateSnapshot,
   UrlTree,
 } from '@angular/router';
+import { Observable, map } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 /**
  * Functional Route Guard for Customer Authentication.
  * Protects customer-only routes (/profile, /orders, /checkout).
- * Redirects unauthenticated requests to /login with the intended destination in returnUrl.
+ * Ensures session restoration finishes before redirecting unauthenticated requests to /login.
  */
 export const authGuard: CanActivateFn = (
   route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
-): boolean | UrlTree => {
+): Observable<boolean | UrlTree> | boolean | UrlTree => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isAuthenticated()) {
-    return true;
+  if (authService.isInitialized()) {
+    if (authService.isAuthenticated()) {
+      return true;
+    }
+    return router.createUrlTree(['/login'], {
+      queryParams: { returnUrl: state.url },
+    });
   }
 
-  // Preserve the intended destination in returnUrl query parameter
-  return router.createUrlTree(['/login'], {
-    queryParams: { returnUrl: state.url },
-  });
+  return authService.checkSession().pipe(
+    map((user) => {
+      if (user) {
+        return true;
+      }
+      return router.createUrlTree(['/login'], {
+        queryParams: { returnUrl: state.url },
+      });
+    })
+  );
 };

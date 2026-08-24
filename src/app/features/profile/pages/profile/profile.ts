@@ -36,7 +36,8 @@ export class Profile {
    * Handle user logout and navigate to login.
    */
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+    });
   }
 }

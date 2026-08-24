@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
+import { of } from 'rxjs';
 import { Navbar } from './navbar';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
@@ -23,7 +24,7 @@ describe('Navbar', () => {
     authServiceMock = {
       currentUser: signal<User | null>(null),
       isAuthenticated: signal<boolean>(false),
-      logout: vi.fn(),
+      logout: vi.fn().mockReturnValue(of(undefined)),
     };
 
     cartServiceMock = {

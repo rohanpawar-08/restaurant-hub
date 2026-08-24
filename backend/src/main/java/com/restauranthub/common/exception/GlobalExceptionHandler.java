@@ -100,6 +100,101 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles DuplicateEmailException when user registration email is already taken.
+     * Maps to HTTP 409 Conflict.
+     */
+    @ExceptionHandler(com.restauranthub.auth.exception.DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmailException(
+            com.restauranthub.auth.exception.DuplicateEmailException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Duplicate email registration attempt at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handles DuplicatePhoneException when user registration phone is already taken.
+     * Maps to HTTP 409 Conflict.
+     */
+    @ExceptionHandler(com.restauranthub.auth.exception.DuplicatePhoneException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicatePhoneException(
+            com.restauranthub.auth.exception.DuplicatePhoneException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Duplicate phone registration attempt at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handles BadCredentialsException when login authentication fails.
+     * Maps to HTTP 401 Unauthorized with a generic message to prevent account enumeration.
+     */
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
+            org.springframework.security.authentication.BadCredentialsException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Authentication failed at [{}]: Invalid credentials", request.getRequestURI());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                "Invalid email or password. Please try again.",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Handles DisabledException when user account is disabled.
+     * Maps to HTTP 401 Unauthorized.
+     */
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabledException(
+            org.springframework.security.authentication.DisabledException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Authentication failed at [{}]: Account is disabled", request.getRequestURI());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                "Account is disabled. Please contact support.",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Handles AccessDeniedException when an authenticated user lacks required privileges.
+     * Maps to HTTP 403 Forbidden.
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            org.springframework.security.access.AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Access denied at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                "Access denied: You do not have permission to access this resource.",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    /**
      * Handles Jakarta Validation errors triggered by @Valid annotations on request bodies.
      * Maps to HTTP 400 Bad Request with a detailed map of invalid field names and failure messages.
      */

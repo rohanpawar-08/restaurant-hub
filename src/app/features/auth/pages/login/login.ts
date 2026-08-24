@@ -67,13 +67,6 @@ export class Login {
     return '';
   }
 
-  /** Quick fill demo credentials for seamless testing */
-  fillDemoCredentials(): void {
-    this.loginForm.patchValue({
-      email: 'rohan@restauranthub.com',
-      password: 'Password123',
-    });
-  }
 
   /** Handle Login Form Submission */
   onSubmit(): void {

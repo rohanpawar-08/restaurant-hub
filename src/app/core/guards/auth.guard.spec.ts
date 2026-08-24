@@ -13,12 +13,14 @@ import { AuthService } from '../services/auth.service';
 describe('authGuard', () => {
   let authServiceMock: {
     isAuthenticated: ReturnType<typeof signal<boolean>>;
+    isInitialized: ReturnType<typeof signal<boolean>>;
   };
   let router: Router;
 
   beforeEach(() => {
     authServiceMock = {
       isAuthenticated: signal<boolean>(false),
+      isInitialized: signal<boolean>(true),
     };
 
     TestBed.configureTestingModule({

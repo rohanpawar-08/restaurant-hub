@@ -1,248 +1,167 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import {
-  LoginCredentials,
-  MockUserRecord,
-  RegistrationData,
-  User,
-} from '../../shared/models/user.model';
-
-const AUTH_USER_KEY = 'restaurant-hub-auth-user';
-const MOCK_USERS_KEY = 'restaurant-hub-mock-users';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { LoginCredentials, RegistrationData, User } from '../../shared/models/user.model';
+import { UserApiResponse } from '../api/models/user-api.model';
+import { mapUserApiResponseToUser } from '../api/mappers/user-api.mapper';
 
 /**
- * Default mock seed user for testing and local development.
- * NOTE: This mock repository MUST be replaced by the Spring Boot backend authentication API.
+ * Enterprise Angular Authentication Service.
+ *
+ * Architecture:
+ * 1. Server-Side Session Management: Interacts with Spring Security using HttpOnly session cookies.
+ * 2. Zero LocalStorage Credentials: Passwords and tokens are never persisted on the client.
+ * 3. Reactive State Signals: Exposes reactive signals (`currentUser`, `isAuthenticated`, `isLoading`, `isInitialized`).
+ * 4. Cross-Origin Credentials: All HTTP calls pass `withCredentials: true` to synchronize cookies.
  */
-const DEFAULT_MOCK_USERS: MockUserRecord[] = [
-  {
-    id: 'USR-SEED-001',
-    fullName: 'Rohan Pawar',
-    email: 'rohan@restauranthub.com',
-    phone: '9876543210',
-    createdAt: '2026-01-15T10:00:00.000Z',
-    passwordHashMock: 'Password123',
-  },
-];
-
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly currentUserState = signal<User | null>(
-    this.loadUserFromStorage()
-  );
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiBaseUrl}/auth`;
+
+  private readonly currentUserState = signal<User | null>(null);
+  private readonly isInitializedState = signal<boolean>(false);
+  private readonly isLoadingState = signal<boolean>(false);
 
   /** Public Signals */
   readonly currentUser = this.currentUserState.asReadonly();
   readonly isAuthenticated = computed(() => this.currentUserState() !== null);
+  readonly isInitialized = this.isInitializedState.asReadonly();
+  readonly isLoading = this.isLoadingState.asReadonly();
 
   constructor() {
-    this.initializeMockUsersStore();
+    this.checkSession().subscribe();
   }
 
   /**
-   * Register a new customer in the mock store and authenticate immediately.
-   * Returns an Observable to mirror future Spring Boot HTTP endpoints.
+   * Initializes or refreshes anti-CSRF token cookie by calling GET /api/v1/auth/csrf.
    */
-  register(data: RegistrationData): Observable<User> {
-    const emailNormalized = data.email.trim().toLowerCase();
-    const mockUsers = this.loadMockUsersFromStorage();
-
-    const existingUser = mockUsers.find(
-      (u) => u.email.toLowerCase() === emailNormalized
-    );
-
-    if (existingUser) {
-      return throwError(
-        () => new Error('An account with this email address already exists.')
-      );
-    }
-
-    const newUserId = this.generateUserId();
-    const newUser: User = {
-      id: newUserId,
-      fullName: data.fullName.trim(),
-      email: data.email.trim(),
-      phone: data.phone.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
-    const newMockRecord: MockUserRecord = {
-      ...newUser,
-      passwordHashMock: data.password,
-    };
-
-    // Save to mock users repository
-    mockUsers.push(newMockRecord);
-    this.saveMockUsersToStorage(mockUsers);
-
-    // Set active session
-    this.setCurrentUser(newUser);
-
-    return of(newUser);
+  initCsrf(): Observable<{ headerName: string; token: string } | null> {
+    return this.http
+      .get<{ headerName: string; token: string }>(`${this.baseUrl}/csrf`, { withCredentials: true })
+      .pipe(catchError(() => of(null)));
   }
 
   /**
-   * Login with email and password against the mock store.
-   * Returns an Observable to mirror future Spring Boot HTTP endpoints.
+   * Verify active server-side HTTP session on application load or page reload.
+   * Invokes `GET /api/v1/auth/me` with cookies.
+   */
+  checkSession(): Observable<User | null> {
+    this.isLoadingState.set(true);
+
+    return this.http
+      .get<UserApiResponse>(`${this.baseUrl}/me`, { withCredentials: true })
+      .pipe(
+        map((response) => mapUserApiResponseToUser(response)),
+        tap((user) => {
+          this.currentUserState.set(user);
+          this.isInitializedState.set(true);
+          this.isLoadingState.set(false);
+        }),
+        catchError(() => {
+          // 401 Unauthorized or network error means customer is not logged in
+          this.currentUserState.set(null);
+          this.isInitializedState.set(true);
+          this.isLoadingState.set(false);
+          return of(null);
+        })
+      );
+  }
+
+  /**
+   * Customer login via Spring Security session cookie.
+   * Invokes `POST /api/v1/auth/login`.
    */
   login(credentials: LoginCredentials): Observable<User> {
-    const emailNormalized = credentials.email.trim().toLowerCase();
-    const password = credentials.password;
-    const mockUsers = this.loadMockUsersFromStorage();
+    this.isLoadingState.set(true);
 
-    const matchedRecord = mockUsers.find(
-      (u) =>
-        u.email.toLowerCase() === emailNormalized &&
-        u.passwordHashMock === password
-    );
-
-    if (!matchedRecord) {
-      return throwError(
-        () => new Error('Invalid email or password. Please try again.')
+    return this.http
+      .post<UserApiResponse>(
+        `${this.baseUrl}/login`,
+        {
+          email: credentials.email.trim().toLowerCase(),
+          password: credentials.password,
+        },
+        { withCredentials: true }
+      )
+      .pipe(
+        map((response) => mapUserApiResponseToUser(response)),
+        tap((user) => {
+          this.currentUserState.set(user);
+          this.isLoadingState.set(false);
+        }),
+        catchError((error: HttpErrorResponse) => {
+          this.isLoadingState.set(false);
+          const message =
+            error.error?.message ||
+            (error.status === 401
+              ? 'Invalid email or password. Please try again.'
+              : 'Unable to sign in at this time. Please check your network connection.');
+          return throwError(() => new Error(message));
+        })
       );
-    }
+  }
 
-    const authenticatedUser: User = {
-      id: matchedRecord.id,
-      fullName: matchedRecord.fullName,
-      email: matchedRecord.email,
-      phone: matchedRecord.phone,
-      createdAt: matchedRecord.createdAt,
+  /**
+   * Customer registration with seamless automatic login.
+   * Invokes `POST /api/v1/auth/register` followed by `POST /api/v1/auth/login`.
+   */
+  register(data: RegistrationData): Observable<User> {
+    this.isLoadingState.set(true);
+
+    const payload = {
+      fullName: data.fullName.trim(),
+      email: data.email.trim().toLowerCase(),
+      phone: data.phone.trim(),
+      password: data.password,
     };
 
-    this.setCurrentUser(authenticatedUser);
-    return of(authenticatedUser);
+    return this.http
+      .post<UserApiResponse>(`${this.baseUrl}/register`, payload, {
+        withCredentials: true,
+      })
+      .pipe(
+        switchMap(() =>
+          this.login({
+            email: payload.email,
+            password: payload.password,
+          })
+        ),
+        catchError((error: HttpErrorResponse) => {
+          this.isLoadingState.set(false);
+          const message =
+            error.error?.message ||
+            (error.status === 409
+              ? 'An account with this email or mobile number already exists.'
+              : 'Registration failed. Please review your details and try again.');
+          return throwError(() => new Error(message));
+        })
+      );
   }
 
   /**
-   * Logout the current user by clearing session state and storage.
-   * Note: The shopping cart remains intact across logout.
+   * Customer logout: terminates backend session and clears local user state.
+   * Invokes `POST /api/v1/auth/logout`.
    */
-  logout(): void {
-    this.currentUserState.set(null);
-    this.removeUserFromStorage();
-  }
+  logout(): Observable<void> {
+    this.isLoadingState.set(true);
 
-  /**
-   * Set and persist the current authenticated user.
-   */
-  private setCurrentUser(user: User): void {
-    this.currentUserState.set(user);
-    this.saveUserToStorage(user);
-  }
-
-  /**
-   * Generate mock customer user ID.
-   */
-  private generateUserId(): string {
-    const timestamp = Date.now().toString().slice(-4);
-    const random = Math.floor(1000 + Math.random() * 9000).toString();
-    return `USR-${timestamp}${random}`;
-  }
-
-  /**
-   * Safe localStorage user loader.
-   */
-  private loadUserFromStorage(): User | null {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = localStorage.getItem(AUTH_USER_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (
-            parsed &&
-            typeof parsed === 'object' &&
-            typeof parsed.id === 'string' &&
-            typeof parsed.email === 'string' &&
-            typeof parsed.fullName === 'string'
-          ) {
-            return parsed as User;
-          }
-        }
-      }
-    } catch {
-      // Gracefully handle corrupted storage
-    }
-    return null;
-  }
-
-  /**
-   * Safe localStorage user saver.
-   */
-  private saveUserToStorage(user: User): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-      }
-    } catch {
-      // Gracefully ignore storage write failures
-    }
-  }
-
-  /**
-   * Safe localStorage user remover.
-   */
-  private removeUserFromStorage(): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem(AUTH_USER_KEY);
-      }
-    } catch {
-      // Gracefully ignore storage removal failures
-    }
-  }
-
-  /**
-   * Initialize mock users store with default seeds if empty.
-   */
-  private initializeMockUsersStore(): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const existing = localStorage.getItem(MOCK_USERS_KEY);
-        if (!existing) {
-          localStorage.setItem(
-            MOCK_USERS_KEY,
-            JSON.stringify(DEFAULT_MOCK_USERS)
-          );
-        }
-      }
-    } catch {
-      // Gracefully ignore storage initialization failures
-    }
-  }
-
-  /**
-   * Load mock users repository from localStorage.
-   */
-  private loadMockUsersFromStorage(): MockUserRecord[] {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const raw = localStorage.getItem(MOCK_USERS_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            return parsed as MockUserRecord[];
-          }
-        }
-      }
-    } catch {
-      // Fall back to default seed on corrupted data
-    }
-    return [...DEFAULT_MOCK_USERS];
-  }
-
-  /**
-   * Save mock users repository to localStorage.
-   */
-  private saveMockUsersToStorage(users: MockUserRecord[]): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(MOCK_USERS_KEY, JSON.stringify(users));
-      }
-    } catch {
-      // Gracefully ignore storage write failures
-    }
+    return this.http
+      .post<void>(`${this.baseUrl}/logout`, {}, { withCredentials: true })
+      .pipe(
+        tap(() => {
+          this.currentUserState.set(null);
+          this.isLoadingState.set(false);
+        }),
+        catchError(() => {
+          // Even if network call fails, guarantee local state is cleared
+          this.currentUserState.set(null);
+          this.isLoadingState.set(false);
+          return of(undefined);
+        })
+      );
   }
 }

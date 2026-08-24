@@ -18,21 +18,6 @@
       </div>
     }
 
-    <!-- Development Demo Helper Callout -->
-    <div class="demo-callout" role="note">
-      <div class="demo-info">
-        <span class="demo-badge">Demo Account</span>
-        <span class="demo-text">rohan@restauranthub.com &bull; Password123</span>
-      </div>
-      <button
-        type="button"
-        class="demo-fill-btn"
-        (click)="fillDemoCredentials()"
-        aria-label="Autofill demo credentials"
-      >
-        Auto-Fill
-      </button>
-    </div>
 
     <!-- Login Form -->
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
+import { of } from 'rxjs';
 import { Profile } from './profile';
 import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../shared/models/user.model';
@@ -25,7 +26,7 @@ describe('Profile', () => {
   beforeEach(async () => {
     authServiceMock = {
       currentUser: signal<User | null>(mockUser),
-      logout: vi.fn(),
+      logout: vi.fn().mockReturnValue(of(undefined)),
     };
 
     await TestBed.configureTestingModule({

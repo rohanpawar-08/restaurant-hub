@@ -35,10 +35,11 @@ export class Navbar {
 
   /**
    * Customer logout action.
-   * Clears auth state and redirects to home. Cart contents remain preserved.
+   * Clears backend session & auth state and redirects to home. Cart contents remain preserved.
    */
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/']);
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/']),
+    });
   }
 }

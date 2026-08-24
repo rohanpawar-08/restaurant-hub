@@ -71,12 +71,6 @@ describe('Login', () => {
     expect(emailControl?.valid).toBe(true);
   });
 
-  it('should auto-fill demo credentials on button trigger', () => {
-    component.fillDemoCredentials();
-    expect(component.loginForm.get('email')?.value).toBe('rohan@restauranthub.com');
-    expect(component.loginForm.get('password')?.value).toBe('Password123');
-    expect(component.loginForm.valid).toBe(true);
-  });
 
   it('should not call authService.login if form is invalid', () => {
     component.onSubmit();
