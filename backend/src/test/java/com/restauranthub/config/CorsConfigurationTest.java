@@ -46,4 +46,17 @@ class CorsConfigurationTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:4200"));
     }
+
+    @Test
+    @DisplayName("Should reject CORS preflight requests from unauthorized origin")
+    void shouldRejectCorsHeadersFromUnauthorizedOrigin() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+
+        mockMvc.perform(options("/api/v1/health")
+                        .header(HttpHeaders.ORIGIN, "http://unauthorized-domain.com")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
+                .andExpect(status().isForbidden());
+    }
 }
+
+
