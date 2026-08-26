@@ -19,12 +19,3 @@ export interface RegistrationData {
   password: string;
   confirmPassword?: string;
 }
-
-/**
- * Development-only mock stored user record.
- * Contains mock password for frontend simulation only.
- * MUST NOT be used in production or sent to backend.
- */
-export interface MockUserRecord extends User {
-  passwordHashMock?: string;
-}

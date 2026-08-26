@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of, tap } from 'rxjs';
 import {
@@ -15,6 +16,7 @@ const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 })
 export class RestaurantSettingsService {
   private readonly http = inject(HttpClient);
+  private readonly titleService = inject(Title);
 
   readonly settings = signal<RestaurantSettings | null>(null);
   readonly loading = signal<boolean>(false);
@@ -72,6 +74,14 @@ export class RestaurantSettingsService {
   }
 
   /**
+   * Updates browser document title dynamically based on restaurant branding.
+   */
+  private updateDocumentTitle(name?: string | null): void {
+    const brandName = name?.trim() || 'RestaurantHub';
+    this.titleService.setTitle(`${brandName} | Online Ordering`);
+  }
+
+  /**
    * Fetches customer-safe restaurant settings from the backend.
    */
   loadSettings(): void {
@@ -85,10 +95,12 @@ export class RestaurantSettingsService {
           this.settings.set(data);
           this.loading.set(false);
           this.applyThemeColors(data.primaryColor, data.secondaryColor);
+          this.updateDocumentTitle(data.restaurantName);
         }),
         catchError((err) => {
           this.loading.set(false);
           this.error.set('Failed to load restaurant settings.');
+          this.updateDocumentTitle('RestaurantHub');
           return of(null);
         })
       )
@@ -107,6 +119,7 @@ export class RestaurantSettingsService {
         tap((updated) => {
           this.settings.set(updated);
           this.applyThemeColors(updated.primaryColor, updated.secondaryColor);
+          this.updateDocumentTitle(updated.restaurantName);
         })
       );
   }

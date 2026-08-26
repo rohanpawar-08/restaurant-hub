@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Title } from '@angular/platform-browser';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { RestaurantSettingsService } from './restaurant-settings.service';
@@ -7,6 +8,7 @@ import { RestaurantSettings, UpdateRestaurantSettingsPayload } from '../../share
 describe('RestaurantSettingsService', () => {
   let service: RestaurantSettingsService;
   let httpMock: HttpTestingController;
+  let titleService: Title;
 
   const mockSettings: RestaurantSettings = {
     id: 1,
@@ -45,6 +47,7 @@ describe('RestaurantSettingsService', () => {
     });
 
     httpMock = TestBed.inject(HttpTestingController);
+    titleService = TestBed.inject(Title);
     service = TestBed.inject(RestaurantSettingsService);
 
     // Handle constructor initial loadSettings() request
@@ -67,6 +70,10 @@ describe('RestaurantSettingsService', () => {
     expect(service.isAcceptingOrders()).toBe(true);
     expect(service.logoUrl()).toBe('/media/logo/brand-logo.png');
     expect(service.heroImageUrl()).toBe('/media/hero/restaurant-front.webp');
+  });
+
+  it('should update browser document title dynamically', () => {
+    expect(titleService.getTitle()).toBe('Spice Symphony | Online Ordering');
   });
 
   it('should update settings via PUT /api/v1/admin/settings and update signals', () => {

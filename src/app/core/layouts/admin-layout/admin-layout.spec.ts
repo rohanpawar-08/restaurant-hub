@@ -37,7 +37,7 @@ describe('AdminLayout', () => {
     router = TestBed.inject(Router);
   });
 
-  it('should create admin layout and display admin full name in header', () => {
+  it('should create admin layout and display admin full name and restaurant branding in header', () => {
     (authService as any).currentUserState.set(mockAdminUser);
 
     fixture = TestBed.createComponent(AdminLayout);
@@ -48,6 +48,7 @@ describe('AdminLayout', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Admin Chef');
     expect(compiled.textContent).toContain('ADMIN PORTAL');
+    expect(compiled.textContent).toContain(component.restaurantName());
   });
 
   it('should trigger logout and redirect to /login', () => {

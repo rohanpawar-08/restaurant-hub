@@ -197,6 +197,173 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw FoodUnavailableException when ordered food belongs to an inactive category")
+    void shouldThrowWhenCategoryIsInactive() {
+        Category inactiveCategory = new Category("Seasonal Specials", "seasonal-specials");
+        inactiveCategory.setId(20L);
+        inactiveCategory.setActive(false);
+
+        Food foodInInactiveCategory = new Food("Summer Thali", "Festive meal", new BigDecimal("350.00"), new BigDecimal("4.7"), "thali.jpg", true, true, true, inactiveCategory);
+        foodInInactiveCategory.setId(400L);
+
+        when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));
+        when(foodRepository.findById(400L)).thenReturn(Optional.of(foodInInactiveCategory));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Rohan Pawar",
+                "rohan@example.com",
+                "9876543210",
+                "123 MG Road",
+                null,
+                "Mumbai",
+                "Maharashtra",
+                "400001",
+                null,
+                PaymentMethod.COD,
+                List.of(new OrderItemRequest(400L, 1))
+        );
+
+        FoodUnavailableException ex = assertThrows(FoodUnavailableException.class, () ->
+                orderService.createOrder(request, "rohan@example.com")
+        );
+        assertEquals("Dish 'Summer Thali' (ID: 400) is currently unavailable.", ex.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should throw FoodUnavailableException when food available flag is null")
+    void shouldThrowWhenFoodAvailableIsNull() {
+        Category activeCategory = new Category("Main Course", "main-course");
+        activeCategory.setId(10L);
+
+        Food foodWithNullAvailable = new Food("Mystery Dish", "Description", new BigDecimal("200.00"), new BigDecimal("4.0"), "mystery.jpg", true, false, true, activeCategory);
+        foodWithNullAvailable.setId(401L);
+        foodWithNullAvailable.setAvailable(null);
+
+        when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));
+        when(foodRepository.findById(401L)).thenReturn(Optional.of(foodWithNullAvailable));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Rohan Pawar",
+                "rohan@example.com",
+                "9876543210",
+                "123 MG Road",
+                null,
+                "Mumbai",
+                "Maharashtra",
+                "400001",
+                null,
+                PaymentMethod.COD,
+                List.of(new OrderItemRequest(401L, 1))
+        );
+
+        assertThrows(FoodUnavailableException.class, () ->
+                orderService.createOrder(request, "rohan@example.com")
+        );
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should throw FoodUnavailableException when food category is null")
+    void shouldThrowWhenFoodCategoryIsNull() {
+        Food foodWithNullCategory = new Food("Uncategorized Dish", "Description", new BigDecimal("200.00"), new BigDecimal("4.0"), "dish.jpg", true, false, true, null);
+        foodWithNullCategory.setId(402L);
+
+        when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));
+        when(foodRepository.findById(402L)).thenReturn(Optional.of(foodWithNullCategory));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Rohan Pawar",
+                "rohan@example.com",
+                "9876543210",
+                "123 MG Road",
+                null,
+                "Mumbai",
+                "Maharashtra",
+                "400001",
+                null,
+                PaymentMethod.COD,
+                List.of(new OrderItemRequest(402L, 1))
+        );
+
+        assertThrows(FoodUnavailableException.class, () ->
+                orderService.createOrder(request, "rohan@example.com")
+        );
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should throw FoodUnavailableException when category active flag is null")
+    void shouldThrowWhenCategoryActiveIsNull() {
+        Category categoryWithNullActive = new Category("Special Category", "special");
+        categoryWithNullActive.setId(30L);
+        categoryWithNullActive.setActive(null);
+
+        Food foodInNullActiveCategory = new Food("Special Dish", "Description", new BigDecimal("200.00"), new BigDecimal("4.0"), "special.jpg", true, false, true, categoryWithNullActive);
+        foodInNullActiveCategory.setId(403L);
+
+        when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));
+        when(foodRepository.findById(403L)).thenReturn(Optional.of(foodInNullActiveCategory));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Rohan Pawar",
+                "rohan@example.com",
+                "9876543210",
+                "123 MG Road",
+                null,
+                "Mumbai",
+                "Maharashtra",
+                "400001",
+                null,
+                PaymentMethod.COD,
+                List.of(new OrderItemRequest(403L, 1))
+        );
+
+        assertThrows(FoodUnavailableException.class, () ->
+                orderService.createOrder(request, "rohan@example.com")
+        );
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should succeed when previously inactive category is reactivated")
+    void shouldSucceedWhenCategoryIsReactivated() {
+        Category seasonalCategory = new Category("Seasonal Specials", "seasonal-specials");
+        seasonalCategory.setId(20L);
+        seasonalCategory.setActive(true); // Reactivated
+
+        Food foodInSeasonalCategory = new Food("Summer Thali", "Festive meal", new BigDecimal("350.00"), new BigDecimal("4.7"), "thali.jpg", true, true, true, seasonalCategory);
+        foodInSeasonalCategory.setId(400L);
+
+        when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));
+        when(foodRepository.findById(400L)).thenReturn(Optional.of(foodInSeasonalCategory));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order o = invocation.getArgument(0);
+            o.setId(600L);
+            return o;
+        });
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Rohan Pawar",
+                "rohan@example.com",
+                "9876543210",
+                "123 MG Road",
+                null,
+                "Mumbai",
+                "Maharashtra",
+                "400001",
+                null,
+                PaymentMethod.COD,
+                List.of(new OrderItemRequest(400L, 1))
+        );
+
+        OrderResponse response = orderService.createOrder(request, "rohan@example.com");
+        assertNotNull(response);
+        assertEquals(600L, response.id());
+        verify(orderRepository).save(any(Order.class));
+    }
+
+    @Test
     @DisplayName("Should throw FoodUnavailableException when ordered food item is marked unavailable")
     void shouldThrowWhenFoodUnavailable() {
         when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));

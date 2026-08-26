@@ -113,7 +113,9 @@ public class OrderService {
             Food food = foodRepository.findById(itemReq.foodId())
                     .orElseThrow(() -> new FoodNotFoundException(itemReq.foodId()));
 
-            if (Boolean.FALSE.equals(food.getAvailable())) {
+            if (!Boolean.TRUE.equals(food.getAvailable())
+                    || food.getCategory() == null
+                    || !Boolean.TRUE.equals(food.getCategory().getActive())) {
                 throw new FoodUnavailableException(food.getId(), food.getName());
             }
 
