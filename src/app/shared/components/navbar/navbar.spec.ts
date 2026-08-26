@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import { Navbar } from './navbar';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { RestaurantSettingsService } from '../../../core/services/restaurant-settings.service';
 import { User } from '../../models/user.model';
 
 describe('Navbar', () => {
@@ -31,12 +32,18 @@ describe('Navbar', () => {
       totalQuantity: signal<number>(0),
     };
 
+    const settingsServiceMock = {
+      restaurantName: signal('RestaurantHub'),
+      logoUrl: signal(null),
+    };
+
     await TestBed.configureTestingModule({
       imports: [Navbar],
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: authServiceMock },
         { provide: CartService, useValue: cartServiceMock },
+        { provide: RestaurantSettingsService, useValue: settingsServiceMock },
       ],
     }).compileComponents();
 

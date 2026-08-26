@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../../../core/services/cart.service';
+import { RestaurantSettingsService } from '../../../../core/services/restaurant-settings.service';
 
 @Component({
   selector: 'app-cart',
@@ -12,6 +13,7 @@ import { CartService } from '../../../../core/services/cart.service';
 })
 export class Cart {
   readonly cartService = inject(CartService);
+  readonly settingsService = inject(RestaurantSettingsService);
 
   /** Direct reactive signals from CartService */
   readonly cartItems = this.cartService.cartItems;
@@ -22,13 +24,17 @@ export class Cart {
   readonly isEmpty = this.cartService.isEmpty;
 
   /** Free delivery progress calculation */
-  readonly freeDeliveryThreshold = 500;
+  readonly freeDeliveryThreshold = this.settingsService.freeDeliveryThreshold;
   readonly amountForFreeDelivery = computed(() =>
-    Math.max(0, this.freeDeliveryThreshold - this.subtotal())
+    Math.max(0, this.freeDeliveryThreshold() - this.subtotal())
   );
   readonly freeDeliveryProgress = computed(() => {
     const sub = this.subtotal();
-    return Math.min(100, Math.round((sub / this.freeDeliveryThreshold) * 100));
+    const threshold = this.freeDeliveryThreshold();
+    if (threshold <= 0) {
+      return 100;
+    }
+    return Math.min(100, Math.round((sub / threshold) * 100));
   });
 
   /** Track image loading errors per food item ID */

@@ -11,6 +11,9 @@ import { Order } from '../../../../shared/models/order.model';
 import { Food } from '../../../../shared/models/food.model';
 import { User } from '../../../../shared/models/user.model';
 
+import { RestaurantSettingsService } from '../../../../core/services/restaurant-settings.service';
+import { signal } from '@angular/core';
+
 describe('Checkout', () => {
   let component: Checkout;
   let fixture: ComponentFixture<Checkout>;
@@ -18,6 +21,12 @@ describe('Checkout', () => {
   let orderService: OrderService;
   let authService: AuthService;
   let router: Router;
+  let settingsServiceMock: {
+    isAcceptingOrders: ReturnType<typeof signal<boolean>>;
+    deliveryFee: ReturnType<typeof signal<number>>;
+    freeDeliveryThreshold: ReturnType<typeof signal<number>>;
+    currencySymbol: ReturnType<typeof signal<string>>;
+  };
 
   const mockFood: Food = {
     id: '10',
@@ -62,6 +71,13 @@ describe('Checkout', () => {
   };
 
   beforeEach(async () => {
+    settingsServiceMock = {
+      isAcceptingOrders: signal(true),
+      deliveryFee: signal(40),
+      freeDeliveryThreshold: signal(500),
+      currencySymbol: signal('₹'),
+    };
+
     await TestBed.configureTestingModule({
       imports: [Checkout],
       providers: [
@@ -71,6 +87,7 @@ describe('Checkout', () => {
         CartService,
         OrderService,
         AuthService,
+        { provide: RestaurantSettingsService, useValue: settingsServiceMock },
       ],
     }).compileComponents();
 
@@ -302,5 +319,34 @@ describe('Checkout', () => {
     expect(component.isSubmitting()).toBe(false);
     expect(component.serverErrorMessage()).toBe('Dish is currently out of stock');
     expect(cartService.isEmpty()).toBe(false);
+  });
+
+  it('should block order submission when store is not accepting orders', () => {
+    settingsServiceMock.isAcceptingOrders.set(false);
+    cartService.addToCart(mockFood);
+
+    const createOrderSpy = vi.spyOn(orderService, 'createOrder');
+
+    fixture = TestBed.createComponent(Checkout);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.checkoutForm.setValue({
+      fullName: 'Rohan Pawar',
+      email: 'rohan@example.com',
+      phone: '9876543210',
+      addressLine1: '123 MG Road',
+      addressLine2: '',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      postalCode: '400001',
+      deliveryInstructions: '',
+      paymentMethod: 'cod',
+    });
+
+    component.onSubmit();
+
+    expect(createOrderSpy).not.toHaveBeenCalled();
+    expect(component.serverErrorMessage()).toContain('not accepting online orders');
   });
 });

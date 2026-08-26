@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -6,6 +7,7 @@ import {
 } from '@angular/common/http/testing';
 import { Menu } from './menu';
 import { FoodService } from '../../../../core/services/food.service';
+import { RestaurantSettingsService } from '../../../../core/services/restaurant-settings.service';
 import { environment } from '../../../../../environments/environment';
 
 describe('Menu Component', () => {
@@ -64,12 +66,19 @@ describe('Menu Component', () => {
   ];
 
   beforeEach(async () => {
+    const mockSettingsService = {
+      deliveryFee: signal(40),
+      freeDeliveryThreshold: signal(500),
+      currencySymbol: signal('₹'),
+    };
+
     await TestBed.configureTestingModule({
       imports: [Menu],
       providers: [
         FoodService,
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: RestaurantSettingsService, useValue: mockSettingsService },
       ],
     }).compileComponents();
 

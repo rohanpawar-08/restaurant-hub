@@ -8,6 +8,9 @@ import { AdminMenuService } from '../../../../core/services/admin-menu.service';
 import { Food } from '../../../../shared/models/food.model';
 import { FoodCategory } from '../../../../shared/models/category.model';
 
+import { RestaurantSettingsService } from '../../../../core/services/restaurant-settings.service';
+import { signal } from '@angular/core';
+
 describe('AdminMenu Component', () => {
   let component: AdminMenu;
   let fixture: ComponentFixture<AdminMenu>;
@@ -48,6 +51,11 @@ describe('AdminMenu Component', () => {
   ];
 
   beforeEach(async () => {
+    const mockSettingsService = {
+      checkMediaStatus: vi.fn().mockReturnValue(of({ available: true, provider: 'Cloudinary' })),
+      uploadMedia: vi.fn().mockReturnValue(of({ url: 'https://cdn.example.com/food.jpg', publicId: 'food_1' })),
+    };
+
     await TestBed.configureTestingModule({
       imports: [AdminMenu],
       providers: [
@@ -55,6 +63,7 @@ describe('AdminMenu Component', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         AdminMenuService,
+        { provide: RestaurantSettingsService, useValue: mockSettingsService },
       ],
     }).compileComponents();
 
@@ -281,5 +290,21 @@ describe('AdminMenu Component', () => {
     component.confirmDelete();
     expect(deleteSpy).toHaveBeenCalledWith('101');
     expect(component.foodToDelete()).toBeNull();
+  });
+
+  it('should upload dish image and update food form image field', () => {
+    fixture = TestBed.createComponent(AdminMenu);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const file = new File(['dummy'], 'tikka.jpg', { type: 'image/jpeg' });
+    const event = {
+      target: { files: [file] },
+    } as unknown as Event;
+
+    component.onFoodImageSelected(event);
+
+    expect(component.foodForm.get('image')?.value).toBe('https://cdn.example.com/food.jpg');
+    expect(component.isUploadingImage()).toBe(false);
   });
 });

@@ -41,6 +41,13 @@ export const routes: Routes = [
             (m) => m.AdminMenu
           ),
       },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-settings/admin-settings').then(
+            (m) => m.AdminSettings
+          ),
+      },
     ],
   },
   {

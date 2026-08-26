@@ -386,6 +386,33 @@
     &:focus { outline: none; border-color: $primary-color; box-shadow: 0 0 0 3px rgba($primary-color, 0.15); }
   }
   .field-error { font-size: 0.775rem; color: #dc2626; font-weight: 500; }
+  .uploading-text { font-size: 0.775rem; color: #2563eb; font-weight: 600; }
+  .media-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    .btn-upload {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.65rem 0.85rem;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      border-radius: $radius-md;
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+    }
+  }
   &.form-check {
     flex-direction: row;
     align-items: center;

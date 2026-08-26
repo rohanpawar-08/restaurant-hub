@@ -44,6 +44,9 @@ class OrderServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private com.restauranthub.settings.RestaurantSettingsService settingsService;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -52,6 +55,7 @@ class OrderServiceTest {
     private Food testFood2;
     private Food unavailableFood;
     private Category category;
+    private com.restauranthub.settings.RestaurantSettings defaultSettings;
 
     @BeforeEach
     void setUp() {
@@ -69,6 +73,16 @@ class OrderServiceTest {
 
         unavailableFood = new Food("Seasonal Mango Shake", "Cold beverage", new BigDecimal("120.00"), new BigDecimal("4.9"), "mango.jpg", true, false, false, category);
         unavailableFood.setId(300L);
+
+        defaultSettings = new com.restauranthub.settings.RestaurantSettings();
+        defaultSettings.setId(1L);
+        defaultSettings.setRestaurantName("RestaurantHub");
+        defaultSettings.setDeliveryFee(new BigDecimal("40.00"));
+        defaultSettings.setFreeDeliveryThreshold(new BigDecimal("500.00"));
+        defaultSettings.setEstimatedDeliveryMinutes(35);
+        defaultSettings.setAcceptingOrders(true);
+
+        org.mockito.Mockito.lenient().when(settingsService.getActiveSettings()).thenReturn(defaultSettings);
     }
 
     @Test
@@ -392,5 +406,73 @@ class OrderServiceTest {
                 orderService.createOrder(request, "rohan@example.com")
         );
         verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should throw OrdersClosedException when restaurant is not accepting orders")
+    void shouldThrowWhenRestaurantNotAcceptingOrders() {
+        when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));
+        com.restauranthub.settings.RestaurantSettings closedSettings = new com.restauranthub.settings.RestaurantSettings();
+        closedSettings.setAcceptingOrders(false);
+        when(settingsService.getActiveSettings()).thenReturn(closedSettings);
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Rohan Pawar",
+                "rohan@example.com",
+                "9876543210",
+                "123 MG Road",
+                null,
+                "Mumbai",
+                "Maharashtra",
+                "400001",
+                null,
+                PaymentMethod.COD,
+                List.of(new OrderItemRequest(100L, 1))
+        );
+
+        com.restauranthub.order.exception.OrdersClosedException ex = assertThrows(
+                com.restauranthub.order.exception.OrdersClosedException.class,
+                () -> orderService.createOrder(request, "rohan@example.com")
+        );
+
+        assertEquals("We're currently not accepting online orders.", ex.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should use dynamic delivery fee and threshold configured in RestaurantSettings")
+    void shouldUseDynamicDeliveryFeeAndThreshold() {
+        when(userRepository.findByEmailIgnoreCase("rohan@example.com")).thenReturn(Optional.of(testUser));
+        when(foodRepository.findById(100L)).thenReturn(Optional.of(testFood1)); // 250.00
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        com.restauranthub.settings.RestaurantSettings customSettings = new com.restauranthub.settings.RestaurantSettings();
+        customSettings.setAcceptingOrders(true);
+        customSettings.setDeliveryFee(new BigDecimal("75.00"));
+        customSettings.setFreeDeliveryThreshold(new BigDecimal("800.00"));
+        customSettings.setEstimatedDeliveryMinutes(45);
+        when(settingsService.getActiveSettings()).thenReturn(customSettings);
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Rohan Pawar",
+                "rohan@example.com",
+                "9876543210",
+                "123 MG Road",
+                null,
+                "Mumbai",
+                "Maharashtra",
+                "400001",
+                null,
+                PaymentMethod.COD,
+                List.of(new OrderItemRequest(100L, 1)) // 250.00 < 800.00 -> delivery fee should be 75.00
+        );
+
+        OrderResponse response = orderService.createOrder(request, "rohan@example.com");
+
+        assertNotNull(response);
+        assertEquals(new BigDecimal("250.00"), response.subtotal());
+        assertEquals(new BigDecimal("75.00"), response.deliveryFee());
+        assertEquals(new BigDecimal("325.00"), response.total());
+        assertEquals(45, response.estimatedDeliveryMinutes());
     }
 }

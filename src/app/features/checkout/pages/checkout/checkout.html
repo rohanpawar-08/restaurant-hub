@@ -22,6 +22,12 @@
           <h2 id="form-heading" class="visually-hidden">Checkout Form Details</h2>
 
           <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+            @if (!isAcceptingOrders()) {
+              <div class="alert alert-warning mb-4" role="alert">
+                <strong>Notice:</strong> We're currently not accepting online orders.
+              </div>
+            }
+
             @if (serverErrorMessage()) {
               <div class="alert alert-danger mb-4" role="alert">
                 <strong>Error:</strong> {{ serverErrorMessage() }}
@@ -309,7 +315,7 @@
               <button
                 type="submit"
                 class="place-order-btn"
-                [disabled]="isSubmitting() || selectedPaymentMethod() !== 'cod'"
+                [disabled]="isSubmitting() || selectedPaymentMethod() !== 'cod' || !isAcceptingOrders()"
               >
                 @if (isSubmitting()) {
                   <span class="btn-spinner" aria-hidden="true"></span>
@@ -378,7 +384,7 @@
 
               @if (deliveryFee() === 0) {
                 <div class="free-delivery-applied">
-                  <span>🎉 Free delivery applied on orders above ₹500</span>
+                  <span>🎉 Free delivery unlocked!</span>
                 </div>
               }
 
@@ -397,7 +403,7 @@
               <button
                 type="button"
                 class="place-order-btn"
-                [disabled]="isSubmitting() || selectedPaymentMethod() !== 'cod'"
+                [disabled]="isSubmitting() || selectedPaymentMethod() !== 'cod' || !isAcceptingOrders()"
                 (click)="onSubmit()"
               >
                 @if (isSubmitting()) {

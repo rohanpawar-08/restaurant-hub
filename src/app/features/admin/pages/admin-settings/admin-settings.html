@@ -1,0 +1,590 @@
+<div class="admin-settings-page">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-titles">
+        <h1 class="page-title">Restaurant Settings &amp; Branding</h1>
+        <p class="page-subtitle">
+          Configure business details, Indian tax &amp; compliance numbers, delivery fee rules, operational hours, and storefront branding.
+        </p>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="btn-primary btn-save-top"
+          [disabled]="isSaving()"
+          (click)="onSubmit()"
+        >
+          @if (isSaving()) {
+            <span class="spinner-sm" aria-hidden="true"></span>
+            <span>Saving Settings...</span>
+          } @else {
+            <span>💾 Save All Changes</span>
+          }
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Feedback Alerts -->
+  @if (successMessage()) {
+    <div class="alert alert-success" role="alert">
+      <span class="alert-icon" aria-hidden="true">✅</span>
+      <div class="alert-content">
+        <p class="alert-message">{{ successMessage() }}</p>
+      </div>
+      <button type="button" class="btn-close-alert" (click)="successMessage.set(null)">✕</button>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-error" role="alert">
+      <span class="alert-icon" aria-hidden="true">⚠️</span>
+      <div class="alert-content">
+        <p class="alert-message">{{ errorMessage() }}</p>
+      </div>
+      <button type="button" class="btn-close-alert" (click)="errorMessage.set(null)">✕</button>
+    </div>
+  }
+
+  <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()" novalidate class="settings-form-layout">
+    
+    <!-- SECTION 1: Restaurant Identity -->
+    <section class="settings-card" aria-labelledby="identity-heading">
+      <div class="card-header">
+        <span class="section-badge">1</span>
+        <div>
+          <h2 id="identity-heading" class="card-title">Restaurant Identity</h2>
+          <p class="card-desc">Brand name and tagline displayed across customer storefront and emails.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="restaurantName" class="form-label">
+              Restaurant Name <span class="req">*</span>
+            </label>
+            <input
+              id="restaurantName"
+              type="text"
+              class="form-control"
+              formControlName="restaurantName"
+              placeholder="e.g. RestaurantHub"
+            />
+            @if (settingsForm.get('restaurantName')?.touched && settingsForm.get('restaurantName')?.invalid) {
+              <span class="field-error">Restaurant name is required (2–150 characters).</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="tagline" class="form-label">Tagline / Slogan</label>
+            <input
+              id="tagline"
+              type="text"
+              class="form-control"
+              formControlName="tagline"
+              placeholder="e.g. Fresh food, delivered with care"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Contact Information -->
+    <section class="settings-card" aria-labelledby="contact-heading">
+      <div class="card-header">
+        <span class="section-badge">2</span>
+        <div>
+          <h2 id="contact-heading" class="card-title">Contact Information</h2>
+          <p class="card-desc">Public phone number and customer support email.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="phone" class="form-label">
+              Phone Number (India) <span class="req">*</span>
+            </label>
+            <div class="input-with-prefix">
+              <span class="phone-prefix" aria-hidden="true">+91</span>
+              <input
+                id="phone"
+                type="tel"
+                class="form-control phone-input"
+                formControlName="phone"
+                placeholder="9876543210"
+                maxlength="10"
+              />
+            </div>
+            @if (settingsForm.get('phone')?.touched && settingsForm.get('phone')?.invalid) {
+              <span class="field-error">Valid 10-digit Indian mobile number is required.</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="email" class="form-label">
+              Support Email <span class="req">*</span>
+            </label>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="contact@restauranthub.com"
+            />
+            @if (settingsForm.get('email')?.touched && settingsForm.get('email')?.invalid) {
+              <span class="field-error">Valid email address is required.</span>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Indian Address -->
+    <section class="settings-card" aria-labelledby="address-heading">
+      <div class="card-header">
+        <span class="section-badge">3</span>
+        <div>
+          <h2 id="address-heading" class="card-title">Indian Business Address</h2>
+          <p class="card-desc">Physical restaurant location shown in the footer and order receipts.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="addressLine1" class="form-label">
+              Address Line 1 <span class="req">*</span>
+            </label>
+            <input
+              id="addressLine1"
+              type="text"
+              class="form-control"
+              formControlName="addressLine1"
+              placeholder="e.g. 123 Gourmet Boulevard, Food Street"
+            />
+            @if (settingsForm.get('addressLine1')?.touched && settingsForm.get('addressLine1')?.invalid) {
+              <span class="field-error">Address Line 1 is required.</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="addressLine2" class="form-label">Address Line 2 (Area / Landmark)</label>
+            <input
+              id="addressLine2"
+              type="text"
+              class="form-control"
+              formControlName="addressLine2"
+              placeholder="e.g. Near City Center Mall"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="city" class="form-label">City <span class="req">*</span></label>
+            <input
+              id="city"
+              type="text"
+              class="form-control"
+              formControlName="city"
+              placeholder="e.g. Mumbai"
+            />
+            @if (settingsForm.get('city')?.touched && settingsForm.get('city')?.invalid) {
+              <span class="field-error">City is required.</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="state" class="form-label">State <span class="req">*</span></label>
+            <input
+              id="state"
+              type="text"
+              class="form-control"
+              formControlName="state"
+              placeholder="e.g. Maharashtra"
+            />
+            @if (settingsForm.get('state')?.touched && settingsForm.get('state')?.invalid) {
+              <span class="field-error">State is required.</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="pinCode" class="form-label">PIN Code <span class="req">*</span></label>
+            <input
+              id="pinCode"
+              type="text"
+              class="form-control"
+              formControlName="pinCode"
+              placeholder="400001"
+              maxlength="6"
+            />
+            @if (settingsForm.get('pinCode')?.touched && settingsForm.get('pinCode')?.invalid) {
+              <span class="field-error">Valid 6-digit PIN code is required.</span>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Business Compliance -->
+    <section class="settings-card" aria-labelledby="compliance-heading">
+      <div class="card-header">
+        <span class="section-badge">4</span>
+        <div>
+          <h2 id="compliance-heading" class="card-title">Business &amp; Statutory Compliance</h2>
+          <p class="card-desc">Indian food safety (FSSAI) and taxation (GSTIN) registration identifiers.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="gstin" class="form-label">GSTIN (Optional)</label>
+            <input
+              id="gstin"
+              type="text"
+              class="form-control"
+              formControlName="gstin"
+              placeholder="e.g. 27ABCDE1234F1Z5"
+              maxlength="15"
+            />
+            @if (settingsForm.get('gstin')?.touched && settingsForm.get('gstin')?.invalid) {
+              <span class="field-error">Standard 15-character GSTIN format is required.</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="fssaiNumber" class="form-label">FSSAI Registration / License No. (Optional)</label>
+            <input
+              id="fssaiNumber"
+              type="text"
+              class="form-control"
+              formControlName="fssaiNumber"
+              placeholder="e.g. 11521000000001 (14 digits)"
+              maxlength="14"
+            />
+            @if (settingsForm.get('fssaiNumber')?.touched && settingsForm.get('fssaiNumber')?.invalid) {
+              <span class="field-error">14-digit numeric FSSAI registration number is required.</span>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: Delivery Settings -->
+    <section class="settings-card" aria-labelledby="delivery-heading">
+      <div class="card-header">
+        <span class="section-badge">5</span>
+        <div>
+          <h2 id="delivery-heading" class="card-title">Delivery Calculations &amp; SLA</h2>
+          <p class="card-desc">Delivery pricing structure, free-delivery threshold, and customer ETA.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="deliveryFee" class="form-label">Standard Delivery Fee (₹) <span class="req">*</span></label>
+            <input
+              id="deliveryFee"
+              type="number"
+              step="1"
+              min="0"
+              class="form-control"
+              formControlName="deliveryFee"
+              placeholder="40"
+            />
+            @if (settingsForm.get('deliveryFee')?.touched && settingsForm.get('deliveryFee')?.invalid) {
+              <span class="field-error">Delivery fee cannot be negative.</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="freeDeliveryThreshold" class="form-label">Free Delivery Threshold (₹) <span class="req">*</span></label>
+            <input
+              id="freeDeliveryThreshold"
+              type="number"
+              step="1"
+              min="0"
+              class="form-control"
+              formControlName="freeDeliveryThreshold"
+              placeholder="500"
+            />
+            @if (settingsForm.get('freeDeliveryThreshold')?.touched && settingsForm.get('freeDeliveryThreshold')?.invalid) {
+              <span class="field-error">Free delivery threshold cannot be negative.</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="estimatedDeliveryMinutes" class="form-label">Estimated Delivery Time (Mins) <span class="req">*</span></label>
+            <input
+              id="estimatedDeliveryMinutes"
+              type="number"
+              step="1"
+              min="5"
+              max="240"
+              class="form-control"
+              formControlName="estimatedDeliveryMinutes"
+              placeholder="35"
+            />
+            @if (settingsForm.get('estimatedDeliveryMinutes')?.touched && settingsForm.get('estimatedDeliveryMinutes')?.invalid) {
+              <span class="field-error">Estimated delivery time must be between 5 and 240 minutes.</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="currencyCode" class="form-label">Currency Code <span class="req">*</span></label>
+            <input
+              id="currencyCode"
+              type="text"
+              class="form-control"
+              formControlName="currencyCode"
+              placeholder="INR"
+            />
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="currencySymbol" class="form-label">Currency Symbol <span class="req">*</span></label>
+            <input
+              id="currencySymbol"
+              type="text"
+              class="form-control"
+              formControlName="currencySymbol"
+              placeholder="₹"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: Opening Hours -->
+    <section class="settings-card" aria-labelledby="hours-heading">
+      <div class="card-header">
+        <span class="section-badge">6</span>
+        <div>
+          <h2 id="hours-heading" class="card-title">Daily Operating Hours</h2>
+          <p class="card-desc">Scheduled restaurant opening and closing hours shown in footer.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="openingTime" class="form-label">Opening Time</label>
+            <input
+              id="openingTime"
+              type="time"
+              class="form-control"
+              formControlName="openingTime"
+            />
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="closingTime" class="form-label">Closing Time</label>
+            <input
+              id="closingTime"
+              type="time"
+              class="form-control"
+              formControlName="closingTime"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: Storefront Branding & Media -->
+    <section class="settings-card" aria-labelledby="branding-heading">
+      <div class="card-header">
+        <span class="section-badge">7</span>
+        <div>
+          <h2 id="branding-heading" class="card-title">Storefront Branding &amp; Media</h2>
+          <p class="card-desc">Dynamic brand logo, hero image, and primary theme colors.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Remote Media Upload Notice / Availability -->
+        <div class="media-status-banner" [class.is-ready]="isMediaAvailable()">
+          <span class="status-icon" aria-hidden="true">{{ isMediaAvailable() ? '☁️' : 'ℹ️' }}</span>
+          <div class="status-text">
+            @if (isMediaAvailable()) {
+              <strong>Cloud Media Upload Active</strong>
+              <p>Remote storage provider ({{ mediaProvider() }}) is connected for direct image uploads.</p>
+            } @else {
+              <strong>Direct Image Input Enabled</strong>
+              <p>Image upload is not configured yet. You can enter an image URL/path.</p>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Logo Section -->
+          <div class="form-group flex-1">
+            <label for="logoUrl" class="form-label">Store Logo URL / Path</label>
+            <div class="media-input-wrapper">
+              <input
+                id="logoUrl"
+                type="text"
+                class="form-control"
+                formControlName="logoUrl"
+                placeholder="e.g. https://res.cloudinary.com/... or assets/logo.png"
+              />
+              @if (isMediaAvailable()) {
+                <label class="btn-upload" title="Upload Logo Image">
+                  <span>📁 Upload</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    (change)="onLogoFileSelected($event)"
+                    style="display: none;"
+                  />
+                </label>
+              }
+            </div>
+            @if (isUploadingLogo()) {
+              <span class="uploading-text">⏳ Uploading logo...</span>
+            }
+            @if (uploadLogoError()) {
+              <span class="field-error">{{ uploadLogoError() }}</span>
+            }
+          </div>
+
+          <!-- Hero Image Section -->
+          <div class="form-group flex-1">
+            <label for="heroImageUrl" class="form-label">Hero Cover Image URL / Path</label>
+            <div class="media-input-wrapper">
+              <input
+                id="heroImageUrl"
+                type="text"
+                class="form-control"
+                formControlName="heroImageUrl"
+                placeholder="e.g. https://res.cloudinary.com/... or assets/hero.png"
+              />
+              @if (isMediaAvailable()) {
+                <label class="btn-upload" title="Upload Hero Cover Image">
+                  <span>📁 Upload</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    (change)="onHeroFileSelected($event)"
+                    style="display: none;"
+                  />
+                </label>
+              }
+            </div>
+            @if (isUploadingHero()) {
+              <span class="uploading-text">⏳ Uploading hero image...</span>
+            }
+            @if (uploadHeroError()) {
+              <span class="field-error">{{ uploadHeroError() }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="primaryColor" class="form-label">Primary Brand Color (Hex)</label>
+            <div class="color-picker-group">
+              <input
+                type="color"
+                [value]="settingsForm.get('primaryColor')?.value || '#FF6B00'"
+                (input)="settingsForm.patchValue({ primaryColor: $any($event.target).value })"
+                class="color-swatch"
+              />
+              <input
+                id="primaryColor"
+                type="text"
+                class="form-control"
+                formControlName="primaryColor"
+                placeholder="#FF6B00"
+                maxlength="7"
+              />
+            </div>
+            @if (settingsForm.get('primaryColor')?.touched && settingsForm.get('primaryColor')?.invalid) {
+              <span class="field-error">Valid hex color code required (e.g. #FF6B00).</span>
+            }
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="secondaryColor" class="form-label">Secondary Brand Color (Hex)</label>
+            <div class="color-picker-group">
+              <input
+                type="color"
+                [value]="settingsForm.get('secondaryColor')?.value || '#1E293B'"
+                (input)="settingsForm.patchValue({ secondaryColor: $any($event.target).value })"
+                class="color-swatch"
+              />
+              <input
+                id="secondaryColor"
+                type="text"
+                class="form-control"
+                formControlName="secondaryColor"
+                placeholder="#1E293B"
+                maxlength="7"
+              />
+            </div>
+            @if (settingsForm.get('secondaryColor')?.touched && settingsForm.get('secondaryColor')?.invalid) {
+              <span class="field-error">Valid hex color code required (e.g. #1E293B).</span>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8: Ordering Status -->
+    <section class="settings-card" aria-labelledby="status-heading">
+      <div class="card-header">
+        <span class="section-badge">8</span>
+        <div>
+          <h2 id="status-heading" class="card-title">Live Ordering Status</h2>
+          <p class="card-desc">Toggle customer checkout availability in real time.</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="status-toggle-card" [class.is-accepting]="settingsForm.get('acceptingOrders')?.value">
+          <div class="status-meta">
+            <span class="status-indicator-dot"></span>
+            <div>
+              <strong class="status-title">
+                {{ settingsForm.get('acceptingOrders')?.value ? 'Store is Open & Accepting Orders' : 'Store is Paused (Not Accepting Orders)' }}
+              </strong>
+              <p class="status-sub">
+                {{ settingsForm.get('acceptingOrders')?.value 
+                    ? 'Customers can browse dishes, build carts, and place delivery orders.'
+                    : 'Customers can browse the menu, but checkout and order submission will be paused.' }}
+              </p>
+            </div>
+          </div>
+
+          <label class="switch-toggle" aria-label="Toggle live ordering status">
+            <input type="checkbox" formControlName="acceptingOrders" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Action Bar -->
+    <footer class="form-bottom-bar">
+      <button
+        type="submit"
+        class="btn-primary btn-save-bottom"
+        [disabled]="isSaving()"
+      >
+        @if (isSaving()) {
+          <span class="spinner-sm" aria-hidden="true"></span>
+          <span>Saving Changes...</span>
+        } @else {
+          <span>💾 Save Restaurant Settings</span>
+        }
+      </button>
+    </footer>
+
+  </form>
+</div>

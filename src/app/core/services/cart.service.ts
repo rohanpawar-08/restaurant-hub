@@ -1,6 +1,7 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { Food } from '../../shared/models/food.model';
 import { CartItem } from '../../shared/models/cart-item.model';
+import { RestaurantSettingsService } from './restaurant-settings.service';
 
 const STORAGE_KEY = 'restaurant-hub-cart';
 
@@ -8,6 +9,7 @@ const STORAGE_KEY = 'restaurant-hub-cart';
   providedIn: 'root',
 })
 export class CartService {
+  private readonly settingsService = inject(RestaurantSettingsService);
   private readonly cartState = signal<CartItem[]>(this.loadCartFromStorage());
 
   /** Readonly and computed signals */
@@ -24,7 +26,9 @@ export class CartService {
     if (sub === 0) {
       return 0;
     }
-    return sub >= 500 ? 0 : 40;
+    const threshold = this.settingsService.freeDeliveryThreshold();
+    const fee = this.settingsService.deliveryFee();
+    return sub >= threshold ? 0 : fee;
   });
   readonly grandTotal = computed(() => this.subtotal() + this.deliveryFee());
   readonly isEmpty = computed(() => this.cartState().length === 0);

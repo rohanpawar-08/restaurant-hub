@@ -3,7 +3,7 @@
     <div class="hero-content">
       <div class="hero-badge">
         <span class="badge-icon" aria-hidden="true">🍽</span>
-        <span>Welcome to RestaurantHub</span>
+        <span>Welcome to {{ restaurantName() }}</span>
       </div>
 
       <h1 class="hero-title">
@@ -12,13 +12,13 @@
       </h1>
 
       <p class="hero-description">
-        Discover the best dishes prepared by professional chefs using
+        {{ tagline() }} — Discover the finest dishes prepared by professional chefs using
         fresh ingredients and delivered quickly to your doorstep.
       </p>
 
       <div class="hero-buttons">
-        <button type="button" class="btn primary-btn">Order Now</button>
-        <button type="button" class="btn secondary-btn">Explore Menu</button>
+        <a routerLink="/menu" class="btn primary-btn">Order Now</a>
+        <a routerLink="/menu" class="btn secondary-btn">Explore Menu</a>
       </div>
 
       <div class="hero-stats">
@@ -29,12 +29,12 @@
 
         <div class="stat">
           <span class="stat-number">500+</span>
-          <span class="stat-label">Professional Chefs</span>
+          <span class="stat-label">Happy Foodies</span>
         </div>
 
         <div class="stat">
           <span class="stat-number">100+</span>
-          <span class="stat-label">Food Items</span>
+          <span class="stat-label">Artisan Dishes</span>
         </div>
       </div>
     </div>
@@ -43,8 +43,9 @@
       <div class="hero-image-glow" aria-hidden="true"></div>
       <div class="hero-image-wrapper">
         <img
-          src="assets/images/hero/hero-food.png"
-          alt="Freshly prepared gourmet dishes with restaurant specialties"
+          [src]="heroImageUrl() && !heroImageFailed() ? heroImageUrl() : defaultHeroImage"
+          [alt]="restaurantName() + ' featured specialties'"
+          (error)="heroImageFailed.set(true)"
           class="hero-img"
           loading="eager"
         />

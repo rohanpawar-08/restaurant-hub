@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AdminMenuService } from '../../../../core/services/admin-menu.service';
+import { RestaurantSettingsService } from '../../../../core/services/restaurant-settings.service';
 import { Food } from '../../../../shared/models/food.model';
 import { FoodCategory } from '../../../../shared/models/category.model';
 import { CreateFoodApiRequest, UpdateFoodApiRequest } from '../../../../core/api/models/admin-api.model';
@@ -16,6 +17,7 @@ import { CreateFoodApiRequest, UpdateFoodApiRequest } from '../../../../core/api
 export class AdminMenu implements OnInit {
   private readonly fb = inject(FormBuilder);
   readonly adminMenuService = inject(AdminMenuService);
+  private readonly settingsService = inject(RestaurantSettingsService);
 
   readonly foods = this.adminMenuService.foods;
   readonly categories = this.adminMenuService.categories;
@@ -23,6 +25,11 @@ export class AdminMenu implements OnInit {
   readonly isSaving = this.adminMenuService.isSaving;
   readonly isDeleting = this.adminMenuService.isDeleting;
   readonly generalError = this.adminMenuService.errorMessage;
+
+  // Media state
+  readonly isMediaAvailable = signal<boolean>(false);
+  readonly isUploadingImage = signal<boolean>(false);
+  readonly uploadImageError = signal<string | null>(null);
 
   // Filter States
   readonly searchTerm = signal('');
@@ -89,6 +96,34 @@ export class AdminMenu implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
+    this.checkMediaStatus();
+  }
+
+  checkMediaStatus(): void {
+    this.settingsService.checkMediaStatus().subscribe({
+      next: (status) => this.isMediaAvailable.set(status.available),
+      error: () => this.isMediaAvailable.set(false),
+    });
+  }
+
+  onFoodImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    this.isUploadingImage.set(true);
+    this.uploadImageError.set(null);
+
+    this.settingsService.uploadMedia(file, 'restauranthub/food').subscribe({
+      next: (res) => {
+        this.foodForm.patchValue({ image: res.url });
+        this.isUploadingImage.set(false);
+      },
+      error: (err) => {
+        this.isUploadingImage.set(false);
+        this.uploadImageError.set(err?.error?.message || 'Image upload failed. You can enter an image URL directly.');
+      },
+    });
   }
 
   loadData(): void {

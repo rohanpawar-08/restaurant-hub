@@ -284,15 +284,34 @@
               </div>
 
               <div class="form-group flex-2">
-                <label for="food-image" class="form-label">Image URL / Path</label>
-                <input
-                  id="food-image"
-                  type="text"
-                  class="form-control"
-                  placeholder="e.g. assets/images/food/dish.png or https://cdn..."
-                  formControlName="image"
-                  autocomplete="off"
-                />
+                <label for="food-image" class="form-label">Dish Image URL / Upload</label>
+                <div class="media-input-wrapper">
+                  <input
+                    id="food-image"
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. assets/images/food/dish.png or https://cdn..."
+                    formControlName="image"
+                    autocomplete="off"
+                  />
+                  @if (isMediaAvailable()) {
+                    <label class="btn-upload" title="Upload Dish Image">
+                      <span>📁 Upload</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        (change)="onFoodImageSelected($event)"
+                        style="display: none;"
+                      />
+                    </label>
+                  }
+                </div>
+                @if (isUploadingImage()) {
+                  <span class="uploading-text">⏳ Uploading dish image...</span>
+                }
+                @if (uploadImageError()) {
+                  <span class="field-error">{{ uploadImageError() }}</span>
+                }
               </div>
             </div>
 

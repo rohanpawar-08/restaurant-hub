@@ -1,7 +1,17 @@
 <nav class="navbar" aria-label="Main Navigation">
 
-  <a routerLink="/" class="logo" aria-label="RestaurantHub Home">
-    🍽 <span>RestaurantHub</span>
+  <a routerLink="/" class="logo" [attr.aria-label]="restaurantName() + ' Home'">
+    @if (logoUrl() && !logoFailed()) {
+      <img
+        [src]="logoUrl()"
+        [alt]="restaurantName() + ' Logo'"
+        class="nav-logo-img"
+        (error)="logoFailed.set(true)"
+      />
+    } @else {
+      <span class="nav-logo-icon" aria-hidden="true">🍽</span>
+    }
+    <span>{{ restaurantName() }}</span>
   </a>
 
   <ul class="nav-links">

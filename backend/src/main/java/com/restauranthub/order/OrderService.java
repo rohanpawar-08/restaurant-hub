@@ -8,6 +8,9 @@ import com.restauranthub.order.dto.OrderItemRequest;
 import com.restauranthub.order.dto.OrderResponse;
 import com.restauranthub.order.exception.FoodUnavailableException;
 import com.restauranthub.order.exception.OrderNotFoundException;
+import com.restauranthub.order.exception.OrdersClosedException;
+import com.restauranthub.settings.RestaurantSettings;
+import com.restauranthub.settings.RestaurantSettingsService;
 import com.restauranthub.user.User;
 import com.restauranthub.user.UserRepository;
 import java.math.BigDecimal;
@@ -23,25 +26,33 @@ import org.springframework.transaction.annotation.Transactional;
  * Security & Financial Guarantees:
  * 1. Server-Authoritative Pricing: Disregards any client-supplied totals/prices.
  *    Current prices are loaded directly from MySQL, and totals are computed with BigDecimal.
- * 2. Atomic Transaction Management: Order creation and item snapshot saves occur in a single transaction.
- *    Any failure rolls back completely, preventing orphaned or partial records.
- * 3. Customer Ownership Isolation: Users can only query orders associated with their authenticated ID.
+ * 2. Dynamic Restaurant Policy: Delivery fee, free delivery threshold, and ordering status
+ *    are driven dynamically by active RestaurantSettings.
+ * 3. Atomic Transaction Management: Order creation and item snapshot saves occur in a single transaction.
+ * 4. Customer Ownership Isolation: Users can only query orders associated with their authenticated ID.
  */
 @Service
 public class OrderService {
 
-    public static final BigDecimal FREE_DELIVERY_THRESHOLD = new BigDecimal("500.00");
-    public static final BigDecimal STANDARD_DELIVERY_FEE = new BigDecimal("40.00");
+    public static final BigDecimal DEFAULT_FREE_DELIVERY_THRESHOLD = new BigDecimal("500.00");
+    public static final BigDecimal DEFAULT_STANDARD_DELIVERY_FEE = new BigDecimal("40.00");
     public static final int DEFAULT_ESTIMATED_DELIVERY_MINUTES = 35;
 
     private final OrderRepository orderRepository;
     private final FoodRepository foodRepository;
     private final UserRepository userRepository;
+    private final RestaurantSettingsService settingsService;
 
-    public OrderService(OrderRepository orderRepository, FoodRepository foodRepository, UserRepository userRepository) {
+    public OrderService(
+            OrderRepository orderRepository,
+            FoodRepository foodRepository,
+            UserRepository userRepository,
+            RestaurantSettingsService settingsService
+    ) {
         this.orderRepository = orderRepository;
         this.foodRepository = foodRepository;
         this.userRepository = userRepository;
+        this.settingsService = settingsService;
     }
 
     /**
@@ -54,6 +65,11 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, String userEmail) {
         User user = resolveAuthenticatedUser(userEmail);
+
+        RestaurantSettings settings = settingsService.getActiveSettings();
+        if (Boolean.FALSE.equals(settings.getAcceptingOrders())) {
+            throw new OrdersClosedException();
+        }
 
         if (request.items() == null || request.items().isEmpty()) {
             throw new IllegalArgumentException("Order must contain at least one item.");
@@ -83,7 +99,11 @@ public class OrderService {
         order.setState(request.state().trim());
         order.setPostalCode(request.postalCode().trim());
         order.setDeliveryInstructions(request.deliveryInstructions() != null ? request.deliveryInstructions().trim() : null);
-        order.setEstimatedDeliveryMinutes(DEFAULT_ESTIMATED_DELIVERY_MINUTES);
+
+        int estimatedDeliveryMinutes = settings.getEstimatedDeliveryMinutes() != null
+                ? settings.getEstimatedDeliveryMinutes()
+                : DEFAULT_ESTIMATED_DELIVERY_MINUTES;
+        order.setEstimatedDeliveryMinutes(estimatedDeliveryMinutes);
 
         for (OrderItemRequest itemReq : request.items()) {
             if (itemReq.quantity() == null || itemReq.quantity() <= 0) {
@@ -115,7 +135,7 @@ public class OrderService {
             order.addItem(orderItem);
         }
 
-        BigDecimal deliveryFee = calculateDeliveryFee(subtotal);
+        BigDecimal deliveryFee = calculateDeliveryFee(subtotal, settings);
         BigDecimal total = subtotal.add(deliveryFee).setScale(2, RoundingMode.HALF_UP);
 
         order.setSubtotal(subtotal);
@@ -155,20 +175,41 @@ public class OrderService {
     }
 
     /**
-     * Calculates the delivery fee based on the authoritative subtotal.
-     * Rule: Free delivery for subtotal >= ₹500, otherwise ₹40 standard fee.
+     * Calculates the delivery fee based on active RestaurantSettings.
+     * Rule: Free delivery if subtotal >= freeDeliveryThreshold, otherwise deliveryFee.
+     *
+     * @param subtotal calculated items subtotal
+     * @param settings active restaurant configuration
+     * @return delivery fee as BigDecimal
+     */
+    public BigDecimal calculateDeliveryFee(BigDecimal subtotal, RestaurantSettings settings) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal threshold = settings != null && settings.getFreeDeliveryThreshold() != null
+                ? settings.getFreeDeliveryThreshold()
+                : DEFAULT_FREE_DELIVERY_THRESHOLD;
+
+        BigDecimal fee = settings != null && settings.getDeliveryFee() != null
+                ? settings.getDeliveryFee()
+                : DEFAULT_STANDARD_DELIVERY_FEE;
+
+        if (subtotal.compareTo(threshold) >= 0) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        return fee.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Overload for delivery fee calculation using current active settings.
      *
      * @param subtotal calculated items subtotal
      * @return delivery fee as BigDecimal
      */
     public BigDecimal calculateDeliveryFee(BigDecimal subtotal) {
-        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        if (subtotal.compareTo(FREE_DELIVERY_THRESHOLD) >= 0) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        return STANDARD_DELIVERY_FEE.setScale(2, RoundingMode.HALF_UP);
+        RestaurantSettings settings = settingsService != null ? settingsService.getActiveSettings() : null;
+        return calculateDeliveryFee(subtotal, settings);
     }
 
     private User resolveAuthenticatedUser(String userEmail) {
@@ -179,3 +220,4 @@ public class OrderService {
                 .orElseThrow(() -> new BadCredentialsException("Authenticated user not found in database."));
     }
 }
+

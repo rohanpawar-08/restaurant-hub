@@ -5,22 +5,22 @@
       <div class="footer-col brand-col">
         <a routerLink="/" class="footer-logo">
           <span class="logo-icon" aria-hidden="true">🍽️</span>
-          <span class="logo-text">RestaurantHub</span>
+          <span class="logo-text">{{ restaurantName() }}</span>
         </a>
         <p class="brand-description">
-          A premier culinary destination delivering artisan gourmet dishes crafted with the freshest ingredients straight to your table.
+          {{ tagline() }} — A premier culinary destination delivering artisan gourmet dishes crafted with the freshest ingredients straight to your table.
         </p>
         <div class="social-links" aria-label="Social media links">
-          <a href="#" class="social-link" aria-label="Follow RestaurantHub on Facebook" rel="noopener noreferrer">
+          <a href="#" class="social-link" [attr.aria-label]="'Follow ' + restaurantName() + ' on Facebook'" rel="noopener noreferrer">
             <span class="social-text" aria-hidden="true">FB</span>
           </a>
-          <a href="#" class="social-link" aria-label="Follow RestaurantHub on Instagram" rel="noopener noreferrer">
+          <a href="#" class="social-link" [attr.aria-label]="'Follow ' + restaurantName() + ' on Instagram'" rel="noopener noreferrer">
             <span class="social-text" aria-hidden="true">IG</span>
           </a>
-          <a href="#" class="social-link" aria-label="Follow RestaurantHub on X" rel="noopener noreferrer">
+          <a href="#" class="social-link" [attr.aria-label]="'Follow ' + restaurantName() + ' on X'" rel="noopener noreferrer">
             <span class="social-text" aria-hidden="true">𝕏</span>
           </a>
-          <a href="#" class="social-link" aria-label="Follow RestaurantHub on YouTube" rel="noopener noreferrer">
+          <a href="#" class="social-link" [attr.aria-label]="'Follow ' + restaurantName() + ' on YouTube'" rel="noopener noreferrer">
             <span class="social-text" aria-hidden="true">YT</span>
           </a>
         </div>
@@ -44,30 +44,44 @@
           <li><a routerLink="/login">Login</a></li>
           <li><a routerLink="/register">Register</a></li>
           <li><a routerLink="/cart">Cart</a></li>
-          <li><a routerLink="/reservation">Reservations</a></li>
+          <li><a routerLink="/orders">My Orders</a></li>
         </ul>
       </div>
 
       <!-- Contact Info -->
       <div class="footer-col contact-col">
-        <h4 class="col-heading">Contact</h4>
+        <h4 class="col-heading">Contact &amp; Location</h4>
         <address class="contact-info">
           <p class="contact-item">
             <span class="contact-icon" aria-hidden="true">📍</span>
-            <span>123 Gourmet Boulevard, Food City, FC 90210</span>
+            <span>{{ formattedAddress() }}</span>
           </p>
           <p class="contact-item">
             <span class="contact-icon" aria-hidden="true">📞</span>
-            <a href="tel:+18005553463">+1 (800) 555-DINE</a>
+            <a [href]="'tel:+91' + phone()">+91 {{ phone() }}</a>
           </p>
           <p class="contact-item">
             <span class="contact-icon" aria-hidden="true">✉️</span>
-            <a href="mailto:hello@restauranthub.com">hello&#64;restauranthub.com</a>
+            <a [href]="'mailto:' + email()">{{ email() }}</a>
           </p>
           <p class="contact-item">
             <span class="contact-icon" aria-hidden="true">🕒</span>
-            <span>Mon - Sun: 10:00 AM - 11:00 PM</span>
+            <span>{{ formattedHours() }}</span>
           </p>
+          @if (gstin() || fssaiNumber()) {
+            <div class="compliance-badges">
+              @if (fssaiNumber()) {
+                <span class="compliance-tag" [title]="'FSSAI License: ' + fssaiNumber()">
+                  🛡️ FSSAI: {{ fssaiNumber() }}
+                </span>
+              }
+              @if (gstin()) {
+                <span class="compliance-tag" [title]="'GSTIN: ' + gstin()">
+                  🏢 GSTIN: {{ gstin() }}
+                </span>
+              }
+            </div>
+          }
         </address>
       </div>
     </div>
@@ -75,7 +89,7 @@
     <!-- Bottom Bar -->
     <div class="footer-bottom">
       <p class="copyright-text">
-        © 2026 RestaurantHub. All rights reserved.
+        © 2026 {{ restaurantName() }}. All rights reserved.
       </p>
       <div class="bottom-links">
         <a routerLink="/" class="bottom-link">Privacy Policy</a>

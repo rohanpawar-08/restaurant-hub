@@ -119,6 +119,63 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles OrdersClosedException when an order is attempted while ordering is disabled.
+     * Maps to HTTP 400 Bad Request.
+     */
+    @ExceptionHandler(com.restauranthub.order.exception.OrdersClosedException.class)
+    public ResponseEntity<ErrorResponse> handleOrdersClosedException(
+            com.restauranthub.order.exception.OrdersClosedException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Order attempt blocked because restaurant is not accepting orders at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
+     * Handles MediaStorageNotConfiguredException when upload provider is not configured.
+     * Maps to HTTP 503 Service Unavailable.
+     */
+    @ExceptionHandler(com.restauranthub.media.exception.MediaStorageNotConfiguredException.class)
+    public ResponseEntity<ErrorResponse> handleMediaStorageNotConfiguredException(
+            com.restauranthub.media.exception.MediaStorageNotConfiguredException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Media storage not configured at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+    }
+
+    /**
+     * Handles MediaUploadException for invalid or failed uploads.
+     * Maps to HTTP 400 Bad Request.
+     */
+    @ExceptionHandler(com.restauranthub.media.exception.MediaUploadException.class)
+    public ResponseEntity<ErrorResponse> handleMediaUploadException(
+            com.restauranthub.media.exception.MediaUploadException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Media upload failure at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
      * Handles InactiveCategoryException when attempting to assign food to an inactive category.
      * Maps to HTTP 400 Bad Request.
      */

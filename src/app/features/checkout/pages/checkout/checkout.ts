@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../../../core/services/cart.service';
 import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { RestaurantSettingsService } from '../../../../core/services/restaurant-settings.service';
 import { CustomerDetails, PaymentMethod, PaymentOption } from '../../../../shared/models/checkout.model';
 import { CreateOrderApiRequest } from '../../../../core/api/models/order-api.model';
 
@@ -20,6 +21,7 @@ export class Checkout implements OnInit {
   readonly cartService = inject(CartService);
   private readonly orderService = inject(OrderService);
   private readonly authService = inject(AuthService);
+  private readonly settingsService = inject(RestaurantSettingsService);
   private readonly router = inject(Router);
 
   /** Direct cart signals */
@@ -29,6 +31,7 @@ export class Checkout implements OnInit {
   readonly deliveryFee = this.cartService.deliveryFee;
   readonly grandTotal = this.cartService.grandTotal;
   readonly isEmpty = this.cartService.isEmpty;
+  readonly isAcceptingOrders = this.settingsService.isAcceptingOrders;
 
   /** Component state */
   readonly isSubmitting = signal(false);
@@ -187,6 +190,11 @@ export class Checkout implements OnInit {
   onSubmit(): void {
     this.isSubmitted.set(true);
     this.serverErrorMessage.set(null);
+
+    if (!this.isAcceptingOrders()) {
+      this.serverErrorMessage.set("We're currently not accepting online orders.");
+      return;
+    }
 
     if (this.isEmpty()) {
       return;
