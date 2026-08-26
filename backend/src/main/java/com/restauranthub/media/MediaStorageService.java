@@ -5,18 +5,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Enterprise abstraction for uploading and managing restaurant media assets.
- * Decouples controllers and services from specific cloud storage vendors (e.g. Cloudinary, S3).
+ * Decouples controllers and services from specific storage implementations (Local filesystem vs Cloudinary).
  */
 public interface MediaStorageService {
 
     /**
-     * Uploads an image file to remote storage.
+     * Uploads an image file to storage.
      *
-     * @param file   validated multipart file
-     * @param folder destination folder/prefix (e.g. "restauranthub/branding", "restauranthub/food")
-     * @return MediaUploadResult containing hosted URL and identifier
+     * @param file            validated multipart file
+     * @param folderOrPurpose target purpose or directory identifier (e.g. "FOOD", "LOGO", "HERO")
+     * @return MediaUploadResult containing public URL and identifier
      */
-    MediaUploadResult uploadImage(MultipartFile file, String folder);
+    MediaUploadResult uploadImage(MultipartFile file, String folderOrPurpose);
 
     /**
      * Deletes an image from storage by its public identifier.
@@ -26,9 +26,16 @@ public interface MediaStorageService {
     void deleteImage(String publicId);
 
     /**
-     * Indicates whether cloud storage credentials and configuration are active and available.
+     * Indicates whether storage configuration and underlying medium are active and ready.
      *
-     * @return true if configured, false otherwise
+     * @return true if configured and writable, false otherwise
      */
     boolean isConfigured();
+
+    /**
+     * Identifies the storage provider name (e.g. "LOCAL", "CLOUDINARY").
+     *
+     * @return provider name string
+     */
+    String getProviderName();
 }

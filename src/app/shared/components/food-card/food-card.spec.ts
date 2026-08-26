@@ -115,4 +115,30 @@ describe('FoodCard Component', () => {
     expect(addSpy).toHaveBeenCalledWith(mockAvailableFood);
     expect(component.isAdded()).toBe(true);
   });
+
+  it('should render uploaded /media/ image correctly and fallback to placeholder on image error', () => {
+    const mediaFood: Food = {
+      ...mockAvailableFood,
+      image: '/media/food/5c64b94c-7abd.jpg',
+      icon: '🍕',
+    };
+
+    fixture = TestBed.createComponent(FoodCard);
+    fixture.componentRef.setInput('food', mediaFood);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const img = compiled.querySelector('.food-img') as HTMLImageElement;
+    expect(img).toBeTruthy();
+    expect(img.getAttribute('src')).toBe('/media/food/5c64b94c-7abd.jpg');
+
+    // Simulate broken image error
+    component.onImageError();
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('.food-img')).toBeFalsy();
+    expect(compiled.querySelector('.image-placeholder')).toBeTruthy();
+    expect(compiled.textContent).toContain('🍕');
+  });
 });

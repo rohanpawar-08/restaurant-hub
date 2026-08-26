@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
  * Automatically detects whether CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET
  * environment variables or properties are populated.
  */
-@Service
 public class CloudinaryMediaStorageService implements MediaStorageService {
 
     private static final Logger log = LoggerFactory.getLogger(CloudinaryMediaStorageService.class);
@@ -38,11 +35,7 @@ public class CloudinaryMediaStorageService implements MediaStorageService {
     private final String apiSecret;
     private final HttpClient httpClient;
 
-    public CloudinaryMediaStorageService(
-            @Value("${CLOUDINARY_CLOUD_NAME:${cloudinary.cloud-name:}}") String cloudName,
-            @Value("${CLOUDINARY_API_KEY:${cloudinary.api-key:}}") String apiKey,
-            @Value("${CLOUDINARY_API_SECRET:${cloudinary.api-secret:}}") String apiSecret
-    ) {
+    public CloudinaryMediaStorageService(String cloudName, String apiKey, String apiSecret) {
         this.cloudName = cloudName != null ? cloudName.trim() : "";
         this.apiKey = apiKey != null ? apiKey.trim() : "";
         this.apiSecret = apiSecret != null ? apiSecret.trim() : "";
@@ -60,6 +53,11 @@ public class CloudinaryMediaStorageService implements MediaStorageService {
     @Override
     public boolean isConfigured() {
         return StringUtils.hasText(cloudName) && StringUtils.hasText(apiKey) && StringUtils.hasText(apiSecret);
+    }
+
+    @Override
+    public String getProviderName() {
+        return "CLOUDINARY";
     }
 
     @Override

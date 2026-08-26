@@ -30,6 +30,7 @@ export class AdminMenu implements OnInit {
   readonly isMediaAvailable = signal<boolean>(false);
   readonly isUploadingImage = signal<boolean>(false);
   readonly uploadImageError = signal<string | null>(null);
+  readonly dishPreviewError = signal<boolean>(false);
 
   // Filter States
   readonly searchTerm = signal('');
@@ -113,8 +114,9 @@ export class AdminMenu implements OnInit {
     const file = input.files[0];
     this.isUploadingImage.set(true);
     this.uploadImageError.set(null);
+    this.dishPreviewError.set(false);
 
-    this.settingsService.uploadMedia(file, 'restauranthub/food').subscribe({
+    this.settingsService.uploadMedia(file, 'FOOD').subscribe({
       next: (res) => {
         this.foodForm.patchValue({ image: res.url });
         this.isUploadingImage.set(false);
@@ -124,6 +126,10 @@ export class AdminMenu implements OnInit {
         this.uploadImageError.set(err?.error?.message || 'Image upload failed. You can enter an image URL directly.');
       },
     });
+  }
+
+  onDishPreviewError(): void {
+    this.dishPreviewError.set(true);
   }
 
   loadData(): void {

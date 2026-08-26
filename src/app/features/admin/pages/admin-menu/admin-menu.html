@@ -312,6 +312,17 @@
                 @if (uploadImageError()) {
                   <span class="field-error">{{ uploadImageError() }}</span>
                 }
+                @if (foodForm.get('image')?.value && !dishPreviewError()) {
+                  <div class="dish-preview-row">
+                    <img
+                      [src]="foodForm.get('image')?.value"
+                      alt="Dish preview"
+                      class="dish-preview-thumb"
+                      (error)="onDishPreviewError()"
+                    />
+                    <span class="preview-hint">Image preview</span>
+                  </div>
+                }
               </div>
             </div>
 

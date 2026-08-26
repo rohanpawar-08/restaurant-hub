@@ -1,30 +1,30 @@
 package com.restauranthub.config;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Arrays;
-
 /**
- * Centralized Spring MVC Configuration for Cross-Origin Resource Sharing (CORS).
- *
- * Why centralized CORS configuration is preferred over `@CrossOrigin` on individual controllers:
- * 1. Single Source of Truth: Security headers, allowed methods, and origin whitelists are maintained in one place.
- * 2. Environment-Driven: Origin URLs can be configured dynamically via properties/environment variables
- *    (e.g., local dev at http://localhost:4200 vs production domain) without touching Java code.
- * 3. Consistent Policy Enforcement: Guarantees uniform headers and options handling across all /api/** endpoints.
- * 4. Safer Credential Handling: Explicit origin whitelists avoid the security risk of wildcard origins (*)
- *    when sending authentication headers, cookies, or credentials.
+ * Centralized Spring MVC Configuration for Cross-Origin Resource Sharing (CORS)
+ * and public read-only serving of locally uploaded media assets under /media/**.
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final String[] allowedOrigins;
+    private final String mediaLocalRoot;
 
-    public WebMvcConfig(@Value("${app.cors.allowed-origins:http://localhost:4200}") String[] allowedOrigins) {
+    public WebMvcConfig(
+            @Value("${app.cors.allowed-origins:http://localhost:4200}") String[] allowedOrigins,
+            @Value("${app.media.local.root:${MEDIA_LOCAL_ROOT:uploads}}") String mediaLocalRoot
+    ) {
         this.allowedOrigins = allowedOrigins;
+        this.mediaLocalRoot = mediaLocalRoot != null ? mediaLocalRoot.trim() : "uploads";
     }
 
     @Override
@@ -35,6 +35,19 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        Path uploadDir = Paths.get(mediaLocalRoot).toAbsolutePath().normalize();
+        String uploadPath = uploadDir.toUri().toString();
+        if (!uploadPath.endsWith("/")) {
+            uploadPath += "/";
+        }
+
+        registry.addResourceHandler("/media/**")
+                .addResourceLocations(uploadPath)
+                .setCachePeriod(3600);
     }
 
     @org.springframework.context.annotation.Bean

@@ -46,13 +46,16 @@ public class AdminMediaController {
     }
 
     /**
-     * Returns the operational status of the remote media storage provider.
+     * Returns the operational status of the active media storage provider.
      */
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getMediaStatus() {
         return ResponseEntity.ok(Map.of(
+                "provider", mediaStorageService.getProviderName(),
+                "configured", mediaStorageService.isConfigured(),
                 "available", mediaStorageService.isConfigured(),
-                "provider", mediaStorageService.isConfigured() ? "Cloudinary" : "None"
+                "maxUploadSizeBytes", MAX_FILE_SIZE,
+                "supportedTypes", java.util.List.of("image/jpeg", "image/png", "image/webp")
         ));
     }
 
@@ -63,7 +66,8 @@ public class AdminMediaController {
     @PostMapping("/images")
     public ResponseEntity<MediaUploadResult> uploadImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "folder", required = false, defaultValue = "restauranthub") String folder
+            @RequestParam(value = "purpose", required = false) String purpose,
+            @RequestParam(value = "folder", required = false) String folder
     ) {
         validateImageFile(file);
 
@@ -71,7 +75,11 @@ public class AdminMediaController {
             throw new MediaStorageNotConfiguredException();
         }
 
-        MediaUploadResult result = mediaStorageService.uploadImage(file, folder);
+        String target = org.springframework.util.StringUtils.hasText(purpose)
+                ? purpose
+                : (org.springframework.util.StringUtils.hasText(folder) ? folder : "FOOD");
+
+        MediaUploadResult result = mediaStorageService.uploadImage(file, target);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

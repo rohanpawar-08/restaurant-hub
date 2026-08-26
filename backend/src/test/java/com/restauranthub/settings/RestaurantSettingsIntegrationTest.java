@@ -11,13 +11,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -170,6 +173,51 @@ class RestaurantSettingsIntegrationTest {
                 .andExpect(jsonPath("$.fssaiNumber", is("12345678901234")))
                 .andExpect(jsonPath("$.primaryColor", is("#FF5500")))
                 .andExpect(jsonPath("$.secondaryColor", is("#0F172A")));
+    }
+
+    @Test
+    @DisplayName("Singleton Check: Multiple settings updates must maintain a single database record")
+    void multipleSettingsUpdatesMustRemainSingleton() throws Exception {
+        long initialCount = settingsRepository.count();
+        assertThat(initialCount).isGreaterThanOrEqualTo(1);
+
+        String update1 = createValidUpdateJson();
+        mockMvc.perform(put("/api/v1/admin/settings")
+                        .with(user(adminUser.getEmail()).roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(update1))
+                .andExpect(status().isOk());
+
+        String update2 = """
+                {
+                    "restaurantName": "Updated Hub",
+                    "tagline": "Fresh food always",
+                    "phone": "9876543211",
+                    "email": "hello@updatedhub.com",
+                    "addressLine1": "999 MG Road",
+                    "city": "Pune",
+                    "state": "Maharashtra",
+                    "pinCode": "411001",
+                    "currencyCode": "INR",
+                    "currencySymbol": "₹",
+                    "deliveryFee": 30.00,
+                    "freeDeliveryThreshold": 450.00,
+                    "estimatedDeliveryMinutes": 25,
+                    "acceptingOrders": true,
+                    "primaryColor": "#FF5500",
+                    "secondaryColor": "#0F172A"
+                }
+                """;
+        mockMvc.perform(put("/api/v1/admin/settings")
+                        .with(user(adminUser.getEmail()).roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(update2))
+                .andExpect(status().isOk());
+
+        long finalCount = settingsRepository.count();
+        assertThat(finalCount).isEqualTo(initialCount);
     }
 
     @Test
@@ -348,30 +396,51 @@ class RestaurantSettingsIntegrationTest {
     }
 
     @Test
-    @DisplayName("Media Endpoint: Valid image upload when storage is unconfigured should return 503")
-    void validImageUploadWhenStorageNotConfiguredShouldReturn503() throws Exception {
-        MockMultipartFile validImage = new MockMultipartFile(
-                "file",
-                "dish.jpg",
-                "image/jpeg",
-                new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0, 0, 0, 0, 0, 0, 0}
-        );
-
-        mockMvc.perform(multipart("/api/v1/admin/media/images")
-                        .file(validImage)
-                        .with(user(adminUser.getEmail()).roles("ADMIN"))
-                        .with(csrf()))
-                .andExpect(status().isServiceUnavailable());
-    }
-
-    @Test
-    @DisplayName("Media Endpoint: Status endpoint should return provider information")
+    @DisplayName("Media Endpoint: Status endpoint should return LOCAL provider as configured")
     void mediaStatusShouldReturnInformation() throws Exception {
         mockMvc.perform(get("/api/v1/admin/media/status")
                         .with(user(adminUser.getEmail()).roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.available", notNullValue()))
-                .andExpect(jsonPath("$.provider", notNullValue()));
+                .andExpect(jsonPath("$.available", is(true)))
+                .andExpect(jsonPath("$.configured", is(true)))
+                .andExpect(jsonPath("$.provider", is("LOCAL")))
+                .andExpect(jsonPath("$.maxUploadSizeBytes", is(5242880)));
+    }
+
+    @Test
+    @DisplayName("Media Endpoint: Admin should successfully upload JPEG and serve it publicly via /media/**")
+    void adminShouldUploadJpegAndServePublicly() throws Exception {
+        MockMultipartFile validImage = new MockMultipartFile(
+                "file",
+                "butter-chicken.jpg",
+                "image/jpeg",
+                new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0, 0, 0, 0, 0, 0, 0}
+        );
+
+        MvcResult result = mockMvc.perform(multipart("/api/v1/admin/media/images")
+                        .file(validImage)
+                        .param("purpose", "FOOD")
+                        .with(user(adminUser.getEmail()).roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.url", startsWith("/media/food/")))
+                .andExpect(jsonPath("$.publicId", startsWith("food/")))
+                .andReturn();
+
+        String responseContent = result.getResponse().getContentAsString();
+        assertThat(responseContent).doesNotContain("C:", "Users", "Admin", "\\");
+
+        // Extract relative URL and verify public GET /media/** serves the image
+        String mediaUrl = responseContent.split("\"url\":\"")[1].split("\"")[0];
+        mockMvc.perform(get(mediaUrl))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Media Endpoint: Public GET for non-existent /media file should return 404")
+    void publicGetNonExistentMediaShouldReturn404() throws Exception {
+        mockMvc.perform(get("/media/food/non-existent-uuid-12345.jpg"))
+                .andExpect(status().isNotFound());
     }
 
     private String createValidUpdateJson() {

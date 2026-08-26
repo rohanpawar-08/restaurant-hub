@@ -102,6 +102,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public Health Check
                         .requestMatchers(HttpMethod.GET, "/api/v1/health/**").permitAll()
+                        // Public Read-Only Uploaded Media Files
+                        .requestMatchers(HttpMethod.GET, "/media/**").permitAll()
                         // Public Read-Only Restaurant Settings & Branding
                         .requestMatchers(HttpMethod.GET, "/api/v1/settings/**", "/api/v1/settings").permitAll()
                         // Public Read-Only Menu & Categories

@@ -115,7 +115,7 @@ export class AdminSettings implements OnInit {
     this.isUploadingLogo.set(true);
     this.uploadLogoError.set(null);
 
-    this.settingsService.uploadMedia(file, 'restauranthub/branding').subscribe({
+    this.settingsService.uploadMedia(file, 'LOGO').subscribe({
       next: (res) => {
         this.settingsForm.patchValue({ logoUrl: res.url });
         this.isUploadingLogo.set(false);
@@ -135,7 +135,7 @@ export class AdminSettings implements OnInit {
     this.isUploadingHero.set(true);
     this.uploadHeroError.set(null);
 
-    this.settingsService.uploadMedia(file, 'restauranthub/branding').subscribe({
+    this.settingsService.uploadMedia(file, 'HERO').subscribe({
       next: (res) => {
         this.settingsForm.patchValue({ heroImageUrl: res.url });
         this.isUploadingHero.set(false);

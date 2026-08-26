@@ -29,8 +29,8 @@ describe('RestaurantSettingsService', () => {
     openingTime: '10:00:00',
     closingTime: '23:00:00',
     acceptingOrders: true,
-    logoUrl: 'https://example.com/logo.png',
-    heroImageUrl: 'https://example.com/hero.png',
+    logoUrl: '/media/logo/brand-logo.png',
+    heroImageUrl: '/media/hero/restaurant-front.webp',
     primaryColor: '#FF6B00',
     secondaryColor: '#1E293B',
   };
@@ -65,6 +65,8 @@ describe('RestaurantSettingsService', () => {
     expect(service.deliveryFee()).toBe(50);
     expect(service.freeDeliveryThreshold()).toBe(600);
     expect(service.isAcceptingOrders()).toBe(true);
+    expect(service.logoUrl()).toBe('/media/logo/brand-logo.png');
+    expect(service.heroImageUrl()).toBe('/media/hero/restaurant-front.webp');
   });
 
   it('should update settings via PUT /api/v1/admin/settings and update signals', () => {
@@ -108,31 +110,33 @@ describe('RestaurantSettingsService', () => {
     expect(service.isAcceptingOrders()).toBe(false);
   });
 
-  it('should check media status via GET /api/v1/admin/media/status', () => {
+  it('should check media status via GET /api/v1/admin/media/status returning LOCAL provider', () => {
     service.checkMediaStatus().subscribe((status) => {
       expect(status.available).toBe(true);
-      expect(status.provider).toBe('Cloudinary');
+      expect(status.provider).toBe('LOCAL');
     });
 
     const req = httpMock.expectOne('/api/v1/admin/media/status');
     expect(req.request.method).toBe('GET');
-    req.flush({ available: true, provider: 'Cloudinary' });
+    req.flush({ available: true, provider: 'LOCAL', configured: true });
   });
 
-  it('should upload media via POST /api/v1/admin/media/images', () => {
+  it('should upload media via POST /api/v1/admin/media/images with FOOD purpose and return /media URL', () => {
     const file = new File(['dummy content'], 'food.jpg', { type: 'image/jpeg' });
 
-    service.uploadMedia(file, 'restauranthub/food').subscribe((result) => {
-      expect(result.url).toBe('https://res.cloudinary.com/demo/image/upload/food.jpg');
-      expect(result.publicId).toBe('food_123');
+    service.uploadMedia(file, 'FOOD').subscribe((result) => {
+      expect(result.url).toBe('/media/food/5c64b94c-7abd.jpg');
+      expect(result.publicId).toBe('food/5c64b94c-7abd.jpg');
     });
 
     const req = httpMock.expectOne('/api/v1/admin/media/images');
     expect(req.request.method).toBe('POST');
     expect(req.request.body instanceof FormData).toBe(true);
+    const formData = req.request.body as FormData;
+    expect(formData.get('purpose')).toBe('FOOD');
     req.flush({
-      url: 'https://res.cloudinary.com/demo/image/upload/food.jpg',
-      publicId: 'food_123',
+      url: '/media/food/5c64b94c-7abd.jpg',
+      publicId: 'food/5c64b94c-7abd.jpg',
     });
   });
 });

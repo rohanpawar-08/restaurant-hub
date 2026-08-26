@@ -408,13 +408,13 @@
       </div>
 
       <div class="card-body">
-        <!-- Remote Media Upload Notice / Availability -->
+        <!-- Media Storage Status -->
         <div class="media-status-banner" [class.is-ready]="isMediaAvailable()">
-          <span class="status-icon" aria-hidden="true">{{ isMediaAvailable() ? '☁️' : 'ℹ️' }}</span>
+          <span class="status-icon" aria-hidden="true">{{ isMediaAvailable() ? '💾' : 'ℹ️' }}</span>
           <div class="status-text">
             @if (isMediaAvailable()) {
-              <strong>Cloud Media Upload Active</strong>
-              <p>Remote storage provider ({{ mediaProvider() }}) is connected for direct image uploads.</p>
+              <strong>Media Storage Active ({{ mediaProvider() }})</strong>
+              <p>Uploaded images are saved directly and served live via /media/ without external credentials.</p>
             } @else {
               <strong>Direct Image Input Enabled</strong>
               <p>Image upload is not configured yet. You can enter an image URL/path.</p>
@@ -425,14 +425,14 @@
         <div class="form-row">
           <!-- Logo Section -->
           <div class="form-group flex-1">
-            <label for="logoUrl" class="form-label">Store Logo URL / Path</label>
+            <label for="logoUrl" class="form-label">Store Logo URL / Upload</label>
             <div class="media-input-wrapper">
               <input
                 id="logoUrl"
                 type="text"
                 class="form-control"
                 formControlName="logoUrl"
-                placeholder="e.g. https://res.cloudinary.com/... or assets/logo.png"
+                placeholder="e.g. /media/logo/... or assets/logo.png"
               />
               @if (isMediaAvailable()) {
                 <label class="btn-upload" title="Upload Logo Image">
@@ -452,18 +452,28 @@
             @if (uploadLogoError()) {
               <span class="field-error">{{ uploadLogoError() }}</span>
             }
+            @if (settingsForm.get('logoUrl')?.value) {
+              <div class="media-preview-box">
+                <img
+                  [src]="settingsForm.get('logoUrl')?.value"
+                  alt="Logo preview"
+                  class="preview-logo-thumb"
+                />
+                <span class="preview-label">Live Logo Preview</span>
+              </div>
+            }
           </div>
 
           <!-- Hero Image Section -->
           <div class="form-group flex-1">
-            <label for="heroImageUrl" class="form-label">Hero Cover Image URL / Path</label>
+            <label for="heroImageUrl" class="form-label">Hero Cover Image URL / Upload</label>
             <div class="media-input-wrapper">
               <input
                 id="heroImageUrl"
                 type="text"
                 class="form-control"
                 formControlName="heroImageUrl"
-                placeholder="e.g. https://res.cloudinary.com/... or assets/hero.png"
+                placeholder="e.g. /media/hero/... or assets/hero.png"
               />
               @if (isMediaAvailable()) {
                 <label class="btn-upload" title="Upload Hero Cover Image">
@@ -482,6 +492,16 @@
             }
             @if (uploadHeroError()) {
               <span class="field-error">{{ uploadHeroError() }}</span>
+            }
+            @if (settingsForm.get('heroImageUrl')?.value) {
+              <div class="media-preview-box">
+                <img
+                  [src]="settingsForm.get('heroImageUrl')?.value"
+                  alt="Hero cover preview"
+                  class="preview-hero-thumb"
+                />
+                <span class="preview-label">Live Hero Cover Preview</span>
+              </div>
             }
           </div>
         </div>

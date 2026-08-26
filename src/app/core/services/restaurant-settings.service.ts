@@ -119,15 +119,16 @@ export class RestaurantSettingsService {
   }
 
   /**
-   * Uploads an image asset to remote cloud storage.
+   * Uploads an image asset to media storage with a controlled purpose (FOOD, LOGO, HERO).
    */
   uploadMedia(
     file: File,
-    folder: string = 'restauranthub'
+    purpose: string = 'FOOD'
   ): Observable<MediaUploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('folder', folder);
+    formData.append('purpose', purpose);
+    formData.append('folder', purpose.toLowerCase());
     return this.http.post<MediaUploadResponse>(
       '/api/v1/admin/media/images',
       formData

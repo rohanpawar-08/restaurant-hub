@@ -410,6 +410,25 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles NoResourceFoundException when a static resource (e.g. /media/**) is not found.
+     * Maps to HTTP 404 Not Found.
+     */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.debug("Resource not found at [{}]: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                "Resource not found: " + ex.getResourcePath(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
      * Catch-all fallback for unexpected server errors.
      * Maps to HTTP 500 Internal Server Error without leaking sensitive stack traces to clients.
      */

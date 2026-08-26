@@ -49,3 +49,8 @@ application-*.local.properties
 *-local.properties
 .env
 
+# Media Uploads (runtime stored local media)
+uploads/
+backend/uploads/
+
+

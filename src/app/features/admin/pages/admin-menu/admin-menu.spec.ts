@@ -52,8 +52,8 @@ describe('AdminMenu Component', () => {
 
   beforeEach(async () => {
     const mockSettingsService = {
-      checkMediaStatus: vi.fn().mockReturnValue(of({ available: true, provider: 'Cloudinary' })),
-      uploadMedia: vi.fn().mockReturnValue(of({ url: 'https://cdn.example.com/food.jpg', publicId: 'food_1' })),
+      checkMediaStatus: vi.fn().mockReturnValue(of({ available: true, provider: 'LOCAL', configured: true })),
+      uploadMedia: vi.fn().mockReturnValue(of({ url: '/media/food/tikka.jpg', publicId: 'food/tikka.jpg' })),
     };
 
     await TestBed.configureTestingModule({
@@ -304,7 +304,7 @@ describe('AdminMenu Component', () => {
 
     component.onFoodImageSelected(event);
 
-    expect(component.foodForm.get('image')?.value).toBe('https://cdn.example.com/food.jpg');
+    expect(component.foodForm.get('image')?.value).toBe('/media/food/tikka.jpg');
     expect(component.isUploadingImage()).toBe(false);
   });
 });
