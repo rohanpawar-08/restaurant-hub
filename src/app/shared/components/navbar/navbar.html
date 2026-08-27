@@ -15,13 +15,13 @@
   </a>
 
   <ul class="nav-links">
-    <li><a routerLink="/">Home</a></li>
-    <li><a routerLink="/menu">Menu</a></li>
-    <li><a routerLink="/orders">Orders</a></li>
-    <li><a routerLink="/about">About</a></li>
-    <li><a routerLink="/contact">Contact</a></li>
+    <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a></li>
+    <li><a routerLink="/menu" routerLinkActive="active">Menu</a></li>
+    <li><a routerLink="/orders" routerLinkActive="active">Orders</a></li>
+    <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+    <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
     <li>
-      <a routerLink="/cart" class="cart-nav-link" aria-label="Shopping Cart">
+      <a routerLink="/cart" routerLinkActive="active" class="cart-nav-link" aria-label="Shopping Cart">
         <span class="cart-nav-icon" aria-hidden="true">🛒</span>
         <span>Cart</span>
         @if (cartCount() > 0) {
@@ -36,14 +36,14 @@
   @if (isAuthenticated()) {
     <div class="user-nav-section">
       @if (isAdmin()) {
-        <a routerLink="/admin" class="admin-portal-btn" aria-label="Open Admin Operations Portal">
-          ⚡ Admin Portal
+        <a routerLink="/admin" class="admin-portal-btn" aria-label="Admin Panel">
+          ⚡ Admin Panel
         </a>
       }
       <span class="user-greeting" [attr.aria-label]="'Logged in as ' + currentUser()?.fullName">
         Hi, <strong>{{ userDisplayName() }}</strong>
       </span>
-      <a routerLink="/profile" class="profile-btn" aria-label="Customer Profile">
+      <a routerLink="/profile" routerLinkActive="active" class="profile-btn" aria-label="Customer Profile">
         Profile
       </a>
       <button type="button" class="logout-btn" (click)="logout()" aria-label="Logout">
@@ -52,8 +52,8 @@
     </div>
   } @else {
     <div class="auth-buttons">
-      <a routerLink="/login" class="login-btn">Login</a>
-      <a routerLink="/register" class="register-btn">Register</a>
+      <a routerLink="/login" routerLinkActive="active" class="login-btn">Login</a>
+      <a routerLink="/register" routerLinkActive="active" class="register-btn">Register</a>
     </div>
   }
 

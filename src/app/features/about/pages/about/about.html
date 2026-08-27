@@ -1,0 +1,130 @@
+<div class="about-page" id="about-page-main">
+  <div class="about-container">
+
+    <!-- Hero Header -->
+    <header class="about-hero-section">
+      <div class="about-badge">
+        <span class="badge-icon" aria-hidden="true">🍲</span>
+        <span>About Our Kitchen</span>
+      </div>
+      <h1 class="about-title">
+        Passionate About Authentic Taste at <span class="highlight">{{ restaurantName() }}</span>
+      </h1>
+      <p class="about-subtitle">
+        {{ tagline() }} — Bringing people together through wholesome, artisan meals made with authentic recipes and delivered fresh with utmost care.
+      </p>
+    </header>
+
+    <!-- Culinary Story Section -->
+    <section class="story-section" aria-labelledby="story-heading">
+      <div class="story-card">
+        <div class="story-text">
+          <span class="section-tag" aria-hidden="true">Our Philosophy</span>
+          <h2 id="story-heading" class="section-title">A Heritage of Rich Flavors and Wholesome Dining</h2>
+          <p>
+            At <strong>{{ restaurantName() }}</strong>, we believe that food is more than nourishment — it is an emotion, a culture, and a celebration of regional culinary traditions. Every dish on our menu represents hours of dedicated craftsmanship, combining authentic spice blends, slow-cooked gravies, and farm-fresh ingredients.
+          </p>
+          <p>
+            Whether you are craving aromatic slow-cooked biryanis, richly spiced paneer preparations, crisp tandoori breads, or decadent desserts, our kitchen is dedicated to providing consistent quality, safety, and mouthwatering taste in every bite.
+          </p>
+        </div>
+        <div class="story-highlights">
+          <div class="highlight-item">
+            <span class="hl-icon" aria-hidden="true">🌿</span>
+            <div class="hl-content">
+              <h3>100% Fresh Daily</h3>
+              <p>Hand-picked vegetables and freshly prepared spices without artificial additives.</p>
+            </div>
+          </div>
+          <div class="highlight-item">
+            <span class="hl-icon" aria-hidden="true">⏱️</span>
+            <div class="hl-content">
+              <h3>~{{ estimatedDeliveryMinutes() }} Min Fast Delivery</h3>
+              <p>Hot, insulated packing ensures your meal arrives fresh and ready to enjoy.</p>
+            </div>
+          </div>
+          <div class="highlight-item">
+            <span class="hl-icon" aria-hidden="true">🛡️</span>
+            <div class="hl-content">
+              <h3>FSSAI Compliant Hygiene</h3>
+              <p>Sanitized prep stations, temperature-controlled storage, and touch-free packing.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why Choose Us / Values Section -->
+    <section class="values-section" aria-labelledby="values-heading">
+      <div class="section-header text-center">
+        <span class="section-tag" aria-hidden="true">Why Choose Us</span>
+        <h2 id="values-heading" class="section-title">The Pillars of Our Kitchen</h2>
+        <p class="section-desc">
+          What makes dining with {{ restaurantName() }} an unforgettable experience.
+        </p>
+      </div>
+
+      <div class="values-grid">
+        @for (value of coreValues; track value.title) {
+          <article class="value-card">
+            <div class="value-icon-wrapper" aria-hidden="true">
+              <span class="value-icon">{{ value.icon }}</span>
+            </div>
+            <h3 class="value-title">{{ value.title }}</h3>
+            <p class="value-description">{{ value.description }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <!-- Location & Timings Quick Card -->
+    <section class="info-section" aria-labelledby="info-heading">
+      <div class="info-card">
+        <div class="info-header">
+          <h2 id="info-heading" class="info-title">Serving You From {{ city() }}</h2>
+          <p class="info-subtitle">Visit us or order online for prompt doorstep delivery.</p>
+        </div>
+        <div class="info-grid">
+          <div class="info-col">
+            <span class="info-icon" aria-hidden="true">📍</span>
+            <div>
+              <span class="info-label">Address</span>
+              <p class="info-val">{{ formattedAddress() }}</p>
+            </div>
+          </div>
+          <div class="info-col">
+            <span class="info-icon" aria-hidden="true">🕒</span>
+            <div>
+              <span class="info-label">Operating Hours</span>
+              <p class="info-val">{{ formattedHours() }}</p>
+            </div>
+          </div>
+          <div class="info-col">
+            <span class="info-icon" aria-hidden="true">📞</span>
+            <div>
+              <span class="info-label">Direct Contact</span>
+              <p class="info-val">
+                <a [href]="'tel:+91' + phone()" class="contact-link">+91 {{ phone() }}</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="cta-section" aria-label="Order food online">
+      <div class="cta-card">
+        <h2 class="cta-title">Ready to Taste the Difference?</h2>
+        <p class="cta-desc">
+          Explore our artisan menu and order your favorite dishes fresh from the kitchen.
+        </p>
+        <div class="cta-actions">
+          <a routerLink="/menu" class="btn btn-primary" id="about-order-btn">Explore Menu</a>
+          <a routerLink="/contact" class="btn btn-secondary" id="about-contact-btn">Contact Us</a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

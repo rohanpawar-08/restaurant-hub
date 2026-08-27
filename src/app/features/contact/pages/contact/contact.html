@@ -1,0 +1,228 @@
+<div class="contact-page" id="contact-page-main">
+  <div class="contact-container">
+
+    <!-- Hero Header -->
+    <header class="contact-hero-section">
+      <div class="contact-badge">
+        <span class="badge-icon" aria-hidden="true">📞</span>
+        <span>Get In Touch</span>
+      </div>
+      <h1 class="contact-title">
+        Contact <span class="highlight">{{ restaurantName() }}</span>
+      </h1>
+      <p class="contact-subtitle">
+        {{ tagline() }} — We are always happy to hear from you. Reach out for inquiries, feedback, or table assistance.
+      </p>
+    </header>
+
+    <!-- Main 2-Column Section -->
+    <div class="contact-content-grid">
+
+      <!-- Left Column: Contact Cards -->
+      <div class="contact-cards-col">
+
+        <!-- Phone Card -->
+        <article class="contact-card">
+          <div class="card-icon-box" aria-hidden="true">
+            <span class="card-icon">📞</span>
+          </div>
+          <div class="card-details">
+            <h2 class="card-title">Phone &amp; Hotline</h2>
+            <p class="card-desc">Call us directly for quick order updates or reservations.</p>
+            <a [href]="'tel:+91' + phone()" class="card-action-link" id="contact-phone-link">
+              +91 {{ phone() }}
+            </a>
+          </div>
+        </article>
+
+        <!-- Email Card -->
+        <article class="contact-card">
+          <div class="card-icon-box" aria-hidden="true">
+            <span class="card-icon">✉️</span>
+          </div>
+          <div class="card-details">
+            <h2 class="card-title">Email Inquiries</h2>
+            <p class="card-desc">Send us your feedback, event inquiries, or catering questions.</p>
+            <a [href]="'mailto:' + email()" class="card-action-link" id="contact-email-link">
+              {{ email() }}
+            </a>
+          </div>
+        </article>
+
+        <!-- Address Card -->
+        <article class="contact-card">
+          <div class="card-icon-box" aria-hidden="true">
+            <span class="card-icon">📍</span>
+          </div>
+          <div class="card-details">
+            <h2 class="card-title">Our Location</h2>
+            <p class="card-desc">Visit our restaurant or check your delivery radius.</p>
+            <address class="card-address">
+              <span class="address-line">{{ addressLine1() }}</span>
+              @if (addressLine2()) {
+                <span class="address-line">{{ addressLine2() }}</span>
+              }
+              <span class="address-line">{{ city() }}, {{ state() }} - {{ pinCode() }}</span>
+            </address>
+          </div>
+        </article>
+
+        <!-- Operating Hours Card -->
+        <article class="contact-card">
+          <div class="card-icon-box" aria-hidden="true">
+            <span class="card-icon">🕒</span>
+          </div>
+          <div class="card-details">
+            <h2 class="card-title">Operating Hours</h2>
+            <p class="card-desc">Kitchen open daily for dine-in, takeaway, and delivery.</p>
+            <div class="hours-badge">
+              <span>Daily: <strong>{{ formattedHours() }}</strong></span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Compliance Badges -->
+        @if (gstin() || fssaiNumber()) {
+          <div class="compliance-box" aria-label="Restaurant Registrations">
+            @if (fssaiNumber()) {
+              <div class="compliance-item">
+                <span class="c-icon" aria-hidden="true">🛡️</span>
+                <span>FSSAI Lic. No: <strong>{{ fssaiNumber() }}</strong></span>
+              </div>
+            }
+            @if (gstin()) {
+              <div class="compliance-item">
+                <span class="c-icon" aria-hidden="true">🏢</span>
+                <span>GSTIN: <strong>{{ gstin() }}</strong></span>
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+
+      <!-- Right Column: Visual Inquiry Form -->
+      <div class="contact-form-col">
+        <div class="form-container">
+          <div class="form-header">
+            <h2 class="form-title">Send a Message</h2>
+            <p class="form-subtitle">Have a question or suggestions? Let us know below.</p>
+          </div>
+
+          @if (formSubmitted()) {
+            <div class="form-success-banner" role="alert">
+              <div class="success-icon" aria-hidden="true">✓</div>
+              <div class="success-text">
+                <h3>Message Recorded!</h3>
+                <p>
+                  Thank you for reaching out to <strong>{{ restaurantName() }}</strong>.
+                  For urgent order assistance, please call our hotline directly at 
+                  <a [href]="'tel:+91' + phone()">+91 {{ phone() }}</a>.
+                </p>
+                <button type="button" class="btn btn-outline" (click)="resetForm()">
+                  Send Another Note
+                </button>
+              </div>
+            </div>
+          } @else {
+            <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form" novalidate>
+
+              <div class="form-group">
+                <label for="contact-name" class="form-label">Full Name <span class="required">*</span></label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  class="form-control"
+                  formControlName="name"
+                  placeholder="e.g. Rohan Pawar"
+                  [class.is-invalid]="contactForm.get('name')?.invalid && contactForm.get('name')?.touched"
+                />
+                @if (contactForm.get('name')?.invalid && contactForm.get('name')?.touched) {
+                  <span class="form-error">Please enter your name (minimum 2 characters).</span>
+                }
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="contact-email" class="form-label">Email Address <span class="required">*</span></label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    class="form-control"
+                    formControlName="email"
+                    placeholder="e.g. rohan@example.com"
+                    [class.is-invalid]="contactForm.get('email')?.invalid && contactForm.get('email')?.touched"
+                  />
+                  @if (contactForm.get('email')?.invalid && contactForm.get('email')?.touched) {
+                    <span class="form-error">Please enter a valid email address.</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="contact-phone" class="form-label">Mobile Number</label>
+                  <input
+                    id="contact-phone"
+                    type="tel"
+                    class="form-control"
+                    formControlName="phone"
+                    placeholder="10-digit mobile number"
+                    [class.is-invalid]="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched"
+                  />
+                  @if (contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched) {
+                    <span class="form-error">Please enter a valid 10-digit mobile number.</span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-subject" class="form-label">Subject <span class="required">*</span></label>
+                <select id="contact-subject" class="form-control" formControlName="subject">
+                  <option value="General Inquiry">General Inquiry</option>
+                  <option value="Feedback / Compliment">Feedback / Compliment</option>
+                  <option value="Party & Catering">Party & Catering Inquiry</option>
+                  <option value="Special Dietary Request">Special Dietary Request</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-message" class="form-label">Message <span class="required">*</span></label>
+                <textarea
+                  id="contact-message"
+                  class="form-control textarea"
+                  rows="4"
+                  formControlName="message"
+                  placeholder="How can we help you today?"
+                  [class.is-invalid]="contactForm.get('message')?.invalid && contactForm.get('message')?.touched"
+                ></textarea>
+                @if (contactForm.get('message')?.invalid && contactForm.get('message')?.touched) {
+                  <span class="form-error">Please enter a message (minimum 10 characters).</span>
+                }
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn btn-primary" id="contact-submit-btn">
+                  Submit Note
+                </button>
+                <p class="form-note">
+                  * For immediate order modifications, please call +91 {{ phone() }}.
+                </p>
+              </div>
+
+            </form>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Quick Order Banner -->
+    <section class="quick-order-banner">
+      <div class="banner-content">
+        <h2>Hungry? Order Your Favorite Dishes Now</h2>
+        <p>Browse our complete culinary menu with instant doorstep delivery in {{ city() }}.</p>
+      </div>
+      <a routerLink="/menu" class="btn btn-menu" id="contact-menu-cta">Browse Menu</a>
+    </section>
+
+  </div>
+</div>

@@ -55,7 +55,8 @@
     transition: color 0.2s ease;
     outline: none;
 
-    &:hover {
+    &:hover,
+    &.active {
       color: $primary-color;
     }
 

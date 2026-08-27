@@ -58,22 +58,34 @@ describe('Navbar', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should render navigation link to /orders', () => {
+  it('should render navigation links to Home, Menu, Orders, About, Contact, and Cart', () => {
     const compiled = fixture.nativeElement as HTMLElement;
+    const homeLink = compiled.querySelector('a[routerLink="/"]');
+    const menuLink = compiled.querySelector('a[routerLink="/menu"]');
     const ordersLink = compiled.querySelector('a[routerLink="/orders"]');
-    expect(ordersLink).toBeTruthy();
+    const aboutLink = compiled.querySelector('a[routerLink="/about"]');
+    const contactLink = compiled.querySelector('a[routerLink="/contact"]');
+    const cartLink = compiled.querySelector('a[routerLink="/cart"]');
+
+    expect(homeLink).toBeTruthy();
+    expect(menuLink?.textContent?.trim()).toBe('Menu');
     expect(ordersLink?.textContent?.trim()).toBe('Orders');
+    expect(aboutLink?.textContent?.trim()).toBe('About');
+    expect(contactLink?.textContent?.trim()).toBe('Contact');
+    expect(cartLink).toBeTruthy();
   });
 
-  it('should show Login and Register buttons when unauthenticated', () => {
+  it('should show Login and Register buttons and NOT show Admin Panel when unauthenticated', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const loginLink = compiled.querySelector('.login-btn');
     const registerLink = compiled.querySelector('.register-btn');
     const userSection = compiled.querySelector('.user-nav-section');
+    const adminLink = compiled.querySelector('a[routerLink="/admin"]');
 
     expect(loginLink).toBeTruthy();
     expect(registerLink).toBeTruthy();
     expect(userSection).toBeNull();
+    expect(adminLink).toBeNull();
   });
 
   it('should show user greeting, profile link, and logout button when authenticated', async () => {
@@ -131,7 +143,7 @@ describe('Navbar', () => {
     expect(badge?.textContent?.trim()).toBe('3');
   });
 
-  it('should show Admin Portal button when authenticated user has ADMIN role', async () => {
+  it('should show Admin Panel button pointing to /admin when authenticated user has ADMIN role', async () => {
     authServiceMock.currentUser.set({
       id: 'USR-ADMIN',
       fullName: 'Admin Chef',
@@ -148,10 +160,11 @@ describe('Navbar', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const adminLink = compiled.querySelector('a[routerLink="/admin"]');
     expect(adminLink).toBeTruthy();
-    expect(adminLink?.textContent).toContain('Admin Portal');
+    expect(adminLink?.getAttribute('routerLink')).toBe('/admin');
+    expect(adminLink?.textContent).toContain('Admin Panel');
   });
 
-  it('should NOT show Admin Portal button when authenticated user has CUSTOMER role', async () => {
+  it('should NOT show Admin Panel button when authenticated user has CUSTOMER role', async () => {
     authServiceMock.currentUser.set({
       id: 'USR-CUST',
       fullName: 'Customer Rohan',
@@ -170,3 +183,4 @@ describe('Navbar', () => {
     expect(adminLink).toBeNull();
   });
 });
+

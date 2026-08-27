@@ -43,9 +43,9 @@
       <div class="hero-image-glow" aria-hidden="true"></div>
       <div class="hero-image-wrapper">
         <img
-          [src]="heroImageUrl() && !heroImageFailed() ? heroImageUrl() : defaultHeroImage"
+          [src]="currentHeroImage()"
           [alt]="restaurantName() + ' featured specialties'"
-          (error)="heroImageFailed.set(true)"
+          (error)="onImageError()"
           class="hero-img"
           loading="eager"
         />
