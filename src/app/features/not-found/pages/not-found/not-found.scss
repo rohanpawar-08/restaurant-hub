@@ -1,0 +1,135 @@
+@use "sass:color";
+@use "../../../../../styles/abstracts/variables" as *;
+
+.not-found-page {
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-md 8%;
+  background: linear-gradient(180deg, $background-light 0%, #ffffff 100%);
+}
+
+.not-found-container {
+  max-width: 600px;
+  width: 100%;
+}
+
+.not-found-card {
+  background: $white;
+  padding: 3rem 2.5rem;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+
+  @media (max-width: 480px) {
+    padding: 2rem 1.5rem;
+  }
+}
+
+.error-badge {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: $primary-color;
+  background: rgba($primary-color, 0.1);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+}
+
+.error-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+.not-found-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: $text-dark;
+  margin: 0;
+
+  @media (max-width: 480px) {
+    font-size: 1.65rem;
+  }
+}
+
+.not-found-desc {
+  font-size: 1rem;
+  color: $text-light;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.not-found-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  width: 100%;
+  justify-content: center;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: $radius-sm;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    @media (max-width: 480px) {
+      width: 100%;
+    }
+  }
+
+  .btn-primary {
+    background: $primary-color;
+    color: $white;
+
+    &:hover {
+      background: color.adjust($primary-color, $lightness: -5%);
+      transform: translateY(-1px);
+    }
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    color: $text-dark;
+
+    &:hover {
+      border-color: $text-dark;
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.help-box {
+  margin-top: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed #e2e8f0;
+  width: 100%;
+
+  p {
+    font-size: 0.875rem;
+    color: $text-light;
+    margin: 0;
+
+    strong {
+      color: $text-dark;
+    }
+  }
+}

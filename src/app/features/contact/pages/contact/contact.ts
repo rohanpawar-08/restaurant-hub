@@ -56,6 +56,16 @@ export class Contact {
     return '10:00 AM - 11:00 PM';
   });
 
+  readonly mailtoUrl = computed(() => {
+    const vals = this.contactForm.value;
+    const recipient = this.email();
+    const subject = encodeURIComponent(`[${this.restaurantName()}] ${vals.subject || 'Inquiry'}`);
+    const body = encodeURIComponent(
+      `Hello ${this.restaurantName()} Team,\n\nName: ${vals.name || ''}\nEmail: ${vals.email || ''}\nPhone: ${vals.phone || 'N/A'}\n\nMessage:\n${vals.message || ''}`
+    );
+    return `mailto:${recipient}?subject=${subject}&body=${body}`;
+  });
+
   onSubmit(): void {
     if (this.contactForm.valid) {
       this.formSubmitted.set(true);
@@ -69,3 +79,4 @@ export class Contact {
     this.formSubmitted.set(false);
   }
 }
+

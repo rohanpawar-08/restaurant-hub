@@ -171,4 +171,36 @@ describe('Orders Page', () => {
     component.setFilter('preparing');
     expect(component.filteredOrders().length).toBe(0);
   });
+
+  it('should render loading skeleton when isLoading is true and orders are empty', async () => {
+    (orderService as any).isLoadingState.set(true);
+    (orderService as any).orderHistoryState.set([]);
+
+    fixture = TestBed.createComponent(Orders);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.orders-loading-state')).toBeTruthy();
+  });
+
+  it('should render error state and trigger retry when error is present', async () => {
+    (orderService as any).errorState.set('Failed to load orders from server');
+    (orderService as any).orderHistoryState.set([]);
+    const loadSpy = vi.spyOn(orderService, 'loadOrders').mockReturnValue(of([]));
+
+    fixture = TestBed.createComponent(Orders);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.orders-error-state')).toBeTruthy();
+    expect(compiled.textContent).toContain('Failed to load orders from server');
+
+    component.retry();
+    expect(loadSpy).toHaveBeenCalled();
+  });
 });
+

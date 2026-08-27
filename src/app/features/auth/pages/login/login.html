@@ -8,6 +8,16 @@
       <p class="auth-subtitle">Sign in to your RestaurantHub account to continue ordering.</p>
     </header>
 
+    <!-- Session Expired Banner -->
+    @if (isSessionExpired()) {
+      <div class="auth-alert info-alert" role="status">
+        <span class="alert-icon" aria-hidden="true">⏱️</span>
+        <div class="alert-content">
+          <p>Your session has expired. Please sign in to continue.</p>
+        </div>
+      </div>
+    }
+
     <!-- Error Banner -->
     @if (errorMessage()) {
       <div class="auth-alert error-alert" role="alert">
@@ -17,6 +27,7 @@
         </div>
       </div>
     }
+
 
 
     <!-- Login Form -->

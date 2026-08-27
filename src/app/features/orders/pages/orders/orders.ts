@@ -79,4 +79,13 @@ export class Orders implements OnInit {
     }
     return orders.filter((order) => order.status === filter).length;
   }
+
+  retry(): void {
+    this.orderService.loadOrders().subscribe({
+      error: () => {
+        // Error state is captured reactively in orderService.error
+      },
+    });
+  }
 }
+

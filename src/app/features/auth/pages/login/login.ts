@@ -26,6 +26,10 @@ export class Login {
   readonly isSubmitted = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly showPassword = signal(false);
+  readonly isSessionExpired = signal<boolean>(
+    this.route.snapshot.queryParamMap.get('sessionExpired') === 'true'
+  );
+
 
   /** Reactive Login Form */
   readonly loginForm: FormGroup = this.fb.group({

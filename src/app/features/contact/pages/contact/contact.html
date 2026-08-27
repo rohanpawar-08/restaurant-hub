@@ -101,27 +101,32 @@
 
       </div>
 
-      <!-- Right Column: Visual Inquiry Form -->
+      <!-- Right Column: Direct Email Inquiry Form -->
       <div class="contact-form-col">
         <div class="form-container">
           <div class="form-header">
-            <h2 class="form-title">Send a Message</h2>
-            <p class="form-subtitle">Have a question or suggestions? Let us know below.</p>
+            <h2 class="form-title">Send a Note / Inquire</h2>
+            <p class="form-subtitle">Fill in your inquiry to generate a direct email dispatch to our team.</p>
           </div>
 
           @if (formSubmitted()) {
-            <div class="form-success-banner" role="alert">
-              <div class="success-icon" aria-hidden="true">✓</div>
+            <div class="form-success-banner" role="status">
+              <div class="success-icon" aria-hidden="true">✉️</div>
               <div class="success-text">
-                <h3>Message Recorded!</h3>
+                <h3>Direct Email Ready for Dispatch</h3>
                 <p>
-                  Thank you for reaching out to <strong>{{ restaurantName() }}</strong>.
-                  For urgent order assistance, please call our hotline directly at 
-                  <a [href]="'tel:+91' + phone()">+91 {{ phone() }}</a>.
+                  Your message for <strong>{{ restaurantName() }}</strong> has been prepared. Click below to send via your email client, or call our hotline directly at
+                  <a [href]="'tel:+91' + phone()">+91 {{ phone() }}</a> for instant assistance.
                 </p>
-                <button type="button" class="btn btn-outline" (click)="resetForm()">
-                  Send Another Note
-                </button>
+                <div class="success-actions">
+                  <a [href]="mailtoUrl()" class="btn btn-primary" id="open-email-btn">
+                    <span>Open Email App</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                  <button type="button" class="btn btn-outline" (click)="resetForm()">
+                    Edit / New Note
+                  </button>
+                </div>
               </div>
             </div>
           } @else {

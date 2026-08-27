@@ -128,7 +128,21 @@
   &.error-alert {
     background-color: #fee2e2;
     border: 1px solid #fca5a5;
-    color: #991b1b;
+    color: #dc2626;
+
+    .alert-icon {
+      font-size: 1.15rem;
+    }
+  }
+
+  &.info-alert {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+
+    .alert-icon {
+      font-size: 1.15rem;
+    }
   }
 }
 

@@ -22,7 +22,32 @@
       }
     </header>
 
-    @if (totalOrdersCount() > 0) {
+    @if (isLoading() && rawOrders().length === 0) {
+      <!-- Loading Skeleton State -->
+      <section class="orders-loading-state" aria-label="Loading your orders">
+        <div class="orders-skeleton-list">
+          @for (item of [1, 2, 3]; track item) {
+            <div class="order-skeleton-card" aria-hidden="true">
+              <div class="skeleton-header shimmer"></div>
+              <div class="skeleton-body shimmer"></div>
+              <div class="skeleton-footer shimmer"></div>
+            </div>
+          }
+        </div>
+      </section>
+    } @else if (error() && rawOrders().length === 0) {
+      <!-- Error State -->
+      <section class="orders-error-state" role="alert">
+        <div class="error-card">
+          <div class="error-icon" aria-hidden="true">⚠️</div>
+          <h2 class="error-title">Unable to load orders</h2>
+          <p class="error-desc">{{ error() }}</p>
+          <button type="button" class="btn btn-primary" (click)="retry()">
+            <span>Try Again</span>
+          </button>
+        </div>
+      </section>
+    } @else if (totalOrdersCount() > 0) {
       <!-- Status Filter Tabs -->
       <section class="filter-section" aria-label="Filter Orders by Status">
         <div class="filter-tabs-scroll">

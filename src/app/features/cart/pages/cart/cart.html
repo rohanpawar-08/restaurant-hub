@@ -139,18 +139,40 @@
             </div>
           </div>
 
-          <a
-            routerLink="/checkout"
-            class="checkout-btn"
-            aria-label="Proceed to Checkout"
-          >
-            <span>Proceed to Checkout →</span>
-          </a>
+          @if (!isAcceptingOrders()) {
+            <div class="cart-warning-banner" role="alert">
+              <span class="warning-icon" aria-hidden="true">⚠️</span>
+              <div class="warning-text">
+                <strong>Online Orders Paused</strong>
+                <p>We're currently not accepting new orders. Please check back later.</p>
+              </div>
+            </div>
+          }
+
+          @if (isAcceptingOrders()) {
+            <a
+              routerLink="/checkout"
+              class="checkout-btn"
+              aria-label="Proceed to Checkout"
+            >
+              <span>Proceed to Checkout →</span>
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="checkout-btn btn-disabled"
+              disabled
+              aria-disabled="true"
+            >
+              <span>Ordering Paused</span>
+            </button>
+          }
 
           <div class="checkout-assurance">
             <span>🔒 Safe & encrypted checkout</span>
           </div>
         </aside>
+
       </div>
     } @else {
       <!-- Empty State -->

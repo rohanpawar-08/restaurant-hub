@@ -1,10 +1,29 @@
 <div class="admin-container">
+  <!-- Mobile Sidebar Backdrop Overlay -->
+  @if (isSidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="closeSidebar()" aria-hidden="true"></div>
+  }
+
   <!-- Sidebar -->
-  <aside class="admin-sidebar" aria-label="Admin Navigation">
+  <aside
+    class="admin-sidebar"
+    [class.is-open]="isSidebarOpen()"
+    aria-label="Admin Navigation"
+  >
     <div class="sidebar-header">
-      <a routerLink="/admin" class="sidebar-brand" aria-label="Admin Dashboard">
-        🍽 <span>{{ restaurantName() }}</span>
-      </a>
+      <div class="sidebar-brand-row">
+        <a routerLink="/admin" class="sidebar-brand" aria-label="Admin Dashboard" (click)="closeSidebar()">
+          🍽 <span>{{ restaurantName() }}</span>
+        </a>
+        <button
+          type="button"
+          class="sidebar-close-btn"
+          aria-label="Close sidebar"
+          (click)="closeSidebar()"
+        >
+          ✕
+        </button>
+      </div>
       <span class="admin-badge">ADMIN PORTAL</span>
     </div>
 
@@ -17,6 +36,7 @@
             [routerLinkActiveOptions]="{ exact: true }"
             routerLinkActive="active"
             class="nav-item"
+            (click)="closeSidebar()"
           >
             <span class="nav-icon" aria-hidden="true">📊</span>
             <span>Dashboard</span>
@@ -27,6 +47,7 @@
             routerLink="/admin/orders"
             routerLinkActive="active"
             class="nav-item"
+            (click)="closeSidebar()"
           >
             <span class="nav-icon" aria-hidden="true">📦</span>
             <span>Orders</span>
@@ -41,6 +62,7 @@
             routerLink="/admin/menu"
             routerLinkActive="active"
             class="nav-item"
+            (click)="closeSidebar()"
           >
             <span class="nav-icon" aria-hidden="true">🍔</span>
             <span>Food Menu</span>
@@ -51,6 +73,7 @@
             routerLink="/admin/categories"
             routerLinkActive="active"
             class="nav-item"
+            (click)="closeSidebar()"
           >
             <span class="nav-icon" aria-hidden="true">📑</span>
             <span>Categories</span>
@@ -65,6 +88,7 @@
             routerLink="/admin/settings"
             routerLinkActive="active"
             class="nav-item"
+            (click)="closeSidebar()"
           >
             <span class="nav-icon" aria-hidden="true">⚙️</span>
             <span>Restaurant Settings</span>
@@ -74,7 +98,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <a routerLink="/" class="view-store-btn">
+      <a routerLink="/" class="view-store-btn" (click)="closeSidebar()">
         <span aria-hidden="true">🏪</span>
         <span>View Customer Store</span>
       </a>
@@ -86,6 +110,15 @@
     <!-- Top Header -->
     <header class="admin-header">
       <div class="header-left">
+        <button
+          type="button"
+          class="admin-menu-toggle"
+          aria-label="Toggle Admin Sidebar"
+          [attr.aria-expanded]="isSidebarOpen()"
+          (click)="toggleSidebar()"
+        >
+          <span aria-hidden="true">☰</span>
+        </button>
         <span class="env-tag">Operations Console</span>
       </div>
 
@@ -106,3 +139,4 @@
     </main>
   </div>
 </div>
+

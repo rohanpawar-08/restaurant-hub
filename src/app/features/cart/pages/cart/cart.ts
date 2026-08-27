@@ -22,6 +22,8 @@ export class Cart {
   readonly deliveryFee = this.cartService.deliveryFee;
   readonly grandTotal = this.cartService.grandTotal;
   readonly isEmpty = this.cartService.isEmpty;
+  readonly isAcceptingOrders = this.settingsService.isAcceptingOrders;
+
 
   /** Free delivery progress calculation */
   readonly freeDeliveryThreshold = this.settingsService.freeDeliveryThreshold;

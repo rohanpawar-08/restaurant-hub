@@ -92,5 +92,10 @@ describe('Contact', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.form-success-banner')).toBeTruthy();
+
+    const openEmailBtn = compiled.querySelector('#open-email-btn') as HTMLAnchorElement;
+    expect(openEmailBtn).toBeTruthy();
+    expect(openEmailBtn.href).toContain('mailto:info@currydelight.com');
   });
 });
+

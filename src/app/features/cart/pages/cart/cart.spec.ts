@@ -55,6 +55,7 @@ describe('Cart Component', () => {
       deliveryFee: signal(40),
       freeDeliveryThreshold: signal(500),
       currencySymbol: signal('₹'),
+      isAcceptingOrders: signal(true),
     };
 
     await TestBed.configureTestingModule({
@@ -91,4 +92,15 @@ describe('Cart Component', () => {
     component.onClear();
     expect(cartServiceMock.clearCart).toHaveBeenCalled();
   });
+
+  it('should display warning banner and disable checkout when accepting orders is false', () => {
+    const settingsService = TestBed.inject(RestaurantSettingsService);
+    (settingsService.isAcceptingOrders as any).set(false);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.cart-warning-banner')).toBeTruthy();
+    expect(compiled.querySelector('.checkout-btn.btn-disabled')).toBeTruthy();
+  });
 });
+

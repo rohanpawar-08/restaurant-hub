@@ -64,4 +64,37 @@ describe('AdminLayout', () => {
     expect(logoutSpy).toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
   });
+
+  it('should toggle and close mobile sidebar drawer', () => {
+    fixture = TestBed.createComponent(AdminLayout);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.isSidebarOpen()).toBe(false);
+
+    component.toggleSidebar();
+    expect(component.isSidebarOpen()).toBe(true);
+
+    component.toggleSidebar();
+    expect(component.isSidebarOpen()).toBe(false);
+
+    component.toggleSidebar();
+    expect(component.isSidebarOpen()).toBe(true);
+
+    component.closeSidebar();
+    expect(component.isSidebarOpen()).toBe(false);
+  });
+
+  it('should close sidebar on Escape key', () => {
+    fixture = TestBed.createComponent(AdminLayout);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    component.isSidebarOpen.set(true);
+    expect(component.isSidebarOpen()).toBe(true);
+
+    component.onEscape();
+    expect(component.isSidebarOpen()).toBe(false);
+  });
 });
+

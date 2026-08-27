@@ -182,5 +182,31 @@ describe('Navbar', () => {
     const adminLink = compiled.querySelector('a[routerLink="/admin"]');
     expect(adminLink).toBeNull();
   });
+
+  it('should toggle and close the mobile navigation menu', () => {
+    expect(component.isMenuOpen()).toBe(false);
+
+    component.toggleMenu();
+    expect(component.isMenuOpen()).toBe(true);
+
+    component.toggleMenu();
+    expect(component.isMenuOpen()).toBe(false);
+
+    component.toggleMenu();
+    expect(component.isMenuOpen()).toBe(true);
+
+    component.closeMenu();
+    expect(component.isMenuOpen()).toBe(false);
+  });
+
+  it('should close mobile menu on escape key', () => {
+    component.isMenuOpen.set(true);
+    expect(component.isMenuOpen()).toBe(true);
+
+    component.onEscape();
+    expect(component.isMenuOpen()).toBe(false);
+  });
 });
+
+
 
