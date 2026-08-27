@@ -1,14 +1,23 @@
 package com.restauranthub.admin;
 
+import com.restauranthub.common.exception.ErrorResponse;
 import com.restauranthub.media.MediaStorageService;
 import com.restauranthub.media.dto.MediaUploadResult;
 import com.restauranthub.media.exception.MediaStorageNotConfiguredException;
 import com.restauranthub.media.exception.MediaUploadException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
  * Administrative REST Controller for secure image uploads.
  * Requires ROLE_ADMIN and valid CSRF token.
  */
+@Tag(name = "Admin Media", description = "Administrative image uploads and storage provider status")
 @RestController
 @RequestMapping("/api/v1/admin/media")
 public class AdminMediaController {
@@ -48,6 +58,14 @@ public class AdminMediaController {
     /**
      * Returns the operational status of the active media storage provider.
      */
+    @Operation(summary = "Get media storage status", description = "Returns the active media provider (LOCAL / CLOUDINARY), limits, and configuration status (Requires ROLE_ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Media status retrieved"),
+            @ApiResponse(responseCode = "401", description = "Full authentication required",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied (Requires ROLE_ADMIN)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getMediaStatus() {
         return ResponseEntity.ok(Map.of(
@@ -63,11 +81,23 @@ public class AdminMediaController {
      * Secure image upload endpoint.
      * Validates file size, MIME type, file extension, and magic bytes before uploading.
      */
-    @PostMapping("/images")
+    @Operation(summary = "Upload image", description = "Uploads a validated image file (JPEG, PNG, WEBP, <= 5MB) for foods, logos, or hero branding (Requires ROLE_ADMIN and CSRF)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Image uploaded successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid image file, unsupported format, or size exceeding 5 MB",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Full authentication required",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied (Requires ROLE_ADMIN and CSRF)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Media storage error or provider failure",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping(value = "/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MediaUploadResult> uploadImage(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "purpose", required = false) String purpose,
-            @RequestParam(value = "folder", required = false) String folder
+            @Parameter(description = "Image file to upload (JPEG, PNG, WEBP, max 5 MB)") @RequestParam("file") MultipartFile file,
+            @Parameter(description = "Media purpose (e.g., FOOD, LOGO, HERO)") @RequestParam(value = "purpose", required = false) String purpose,
+            @Parameter(description = "Storage folder override") @RequestParam(value = "folder", required = false) String folder
     ) {
         validateImageFile(file);
 
@@ -130,7 +160,7 @@ public class AdminMediaController {
         }
 
         // PNG: 89 50 4E 47
-        if (header[0] == (byte) 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) {
+        if (header[0] == (byte) 0x89 && header[1] == (byte) 0x50 && header[2] == (byte) 0x4E && header[3] == (byte) 0x4E) {
             return true;
         }
 

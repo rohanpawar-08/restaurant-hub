@@ -102,6 +102,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public Health Check
                         .requestMatchers(HttpMethod.GET, "/api/v1/health/**").permitAll()
+                        // Public OpenAPI & Swagger Documentation Endpoints
+                        .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Public Read-Only Uploaded Media Files
                         .requestMatchers(HttpMethod.GET, "/media/**").permitAll()
                         // Public Read-Only Restaurant Settings & Branding
